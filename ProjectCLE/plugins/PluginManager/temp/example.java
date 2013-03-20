@@ -1,7 +1,5 @@
 package main;
 
-import java.util.ArrayList;
-
 import main.ICore;
 import main.plugin.IPlugin;
 

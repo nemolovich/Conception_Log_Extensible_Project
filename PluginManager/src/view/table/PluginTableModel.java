@@ -1,7 +1,6 @@
 package view.table;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.table.AbstractTableModel;
@@ -17,7 +16,7 @@ public class PluginTableModel extends AbstractTableModel
  
     private final String[] header = {"Nom", "Défaut", "Lazy", "Actif", "Chemin", "Chargé"};
     
-    private final List<IPluginDescriptor> datas = new ArrayList<IPluginDescriptor>();
+    private final ArrayList<IPluginDescriptor> datas = new ArrayList<IPluginDescriptor>();
  
     public PluginTableModel()
     {
@@ -123,8 +122,22 @@ public class PluginTableModel extends AbstractTableModel
         }
 //        this.fireTableDataChanged();
         this.fireTableRowsUpdated(rowIndex, rowIndex);
-		System.out.println(this.datas.get(rowIndex).toString());
     }
+
+    /**
+     * Update a plugin from a {@link IPluginDescriptor plugin descriptor}
+     * @param plugin : {@link IPluginDescriptor}, The plugin descriptor
+     * @param rowIndex : {@link Integer int}, The row index
+     */
+	public void updatePlugin(IPluginDescriptor plugin, int rowIndex)
+	{
+		((IPluginDescriptor)this.datas.get(rowIndex)).setName(plugin.getName());
+		((IPluginDescriptor)this.datas.get(rowIndex)).setDefault(plugin.isDefault());
+		((IPluginDescriptor)this.datas.get(rowIndex)).setLazy(plugin.isLazy());
+		((IPluginDescriptor)this.datas.get(rowIndex)).setActive(plugin.isActive());
+		((IPluginDescriptor)this.datas.get(rowIndex)).setLoaded(plugin.isLoaded());
+        this.fireTableRowsUpdated(rowIndex, rowIndex);
+	}
     
     private JCheckBox getCheckbox(boolean selected)
     {

@@ -19,20 +19,25 @@ public interface ICore
 	 * plugin descriptor
 	 * @param active - {@link Boolean boolean}, Set if the plugin
 	 * must be loaded with active status
-	 * @return {@link Boolean boolean}, True if the plugin have been 
-	 * successfully loaded
+	 * @return {@link IPlugin}, The plugin if it has been successfully loaded
 	 */
-	public abstract boolean loadPlugin(IPluginDescriptor descriptor,
+	public abstract IPlugin loadPlugin(IPluginDescriptor descriptor,
 			boolean active);
 
 	/**
 	 * Load a config file from core.
-	 * @param fileName - {@link String}, The file name to load
 	 * @return {@link Boolean boolean}, True if the config have been 
 	 * successfully loaded
 	 */
-	public abstract boolean loadConfigs(String fileName);
+	public abstract boolean loadConfigs();
 
+	/**
+	 * Get the {@link IPluginDescriptor plugin descriptor} from a plugin name
+	 * @param pluginName : {@link String}, The plugin name
+	 * @param pluginPath : {@link String}, The plugin path
+	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 */
+	public abstract IPluginDescriptor getPluginConfig(String pluginName, String pluginPath);
 	/**
 	 * Get the plugins list that implement the given interface name.
 	 * @param iplugin : {@link String}, The interface name

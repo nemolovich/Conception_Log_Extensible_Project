@@ -82,10 +82,12 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 			{
 				this.validated=true;
 				JOptionPane.showMessageDialog(this, "<html><b> Le plugin \""+this.getPluginName()+
-				"\" a bien été créé</b><br/>Pour l'ajouter en tant que projet à eclipse:<br/>" +
-				"<li><ul>File -> Import... -> Existing Project into Workspace</ul>" +
-				"<ul>Browse...</ul>" +
-				"<ul></ul></li></html>", "Plugin \""+this.getPluginame()+"\" créé",
+				"\" a bien été créé.</b><br/>Pour l'ajouter en tant que projet à eclipse:<br/>" +
+				"<ul><li><i>File</i> -> <i>Import...</i> -> <i>Existing Project into Workspace</i></li>" +
+				"<li><i>Next ></i></li>" +
+				"<li><i>Browse...</i></li>" +
+				"<li>Selectionnez le dossier dans le workspace et validez</li>" +
+				"</ul></html>", "Plugin \""+this.getPluginName()+"\" créé",
 				JOptionPane.INFORMATION_MESSAGE);
 				this.dispose();
 			}
@@ -149,7 +151,7 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 		if(this.parent.getPluginManager().isExistingProject(pluginName))
 		{
 			int res=JOptionPane.showConfirmDialog(this, "Le plugin semble exister, voulez-vous l'écraser?",
-					"Nom de plugin existant", JOptionPane.YES_OPTION,JOptionPane.ERROR_MESSAGE);
+					"Nom de plugin existant", JOptionPane.YES_OPTION,JOptionPane.WARNING_MESSAGE);
 			if(res==1)
 			{
 				this.erase=false;

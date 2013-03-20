@@ -29,6 +29,7 @@ public class Core implements ICore
 	 * The core path.
 	 */
 	private String path;
+	private String fileName;
 	
 	/**
 	 * Retourne l'URL du chemin vers une librairie donnée
@@ -54,12 +55,59 @@ public class Core implements ICore
 	 * @see main.ICore#loadPlugin(main.plugin.IPluginDescriptor, boolean)
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
-	public boolean loadPlugin(IPluginDescriptor descriptor, boolean active)
+	public IPlugin loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
-		System.out.println("[LOG] Chargement ("+(active?"actif":"passif")+") du plugin \""+descriptor.getName()+"\"...");
-		Class<IPlugin> c;
+		System.out.println("[LOG] Chargement ("+(active?"actif":"passif")+") du plugin \""+
+						descriptor.getName()+"\"...");
+		Class<?> c;
 		ArrayList<URL> urls=new ArrayList<URL>();
+		if(descriptor.getInterfaces().size()>0)
+		{
+			/*
+			 * Pour toutes les interfaces dont dépend le plugin
+			 */
+			for(String intfce:descriptor.getInterfaces())
+			{
+				/*
+				 * On recherche le plugin qui possède cette interface
+				 */
+				for(IPluginDescriptor plugin:this.plugins)
+				{
+					boolean found=false;
+					if(plugin.getDependencies().size()>0)
+					{
+						/*
+						 * Pour chaque interface que possède le plugin
+						 */
+						for(String depd:plugin.getDependencies())
+						{
+							/*
+							 * Si l'interface est celle désirée, on ajoute son path dans le classloader
+							 */
+							if(depd.equals(intfce))
+							{
+								found=true;
+								try
+								{
+									urls.add(new URL("file:"+this.path+plugin.getPath()+File.separator));
+									break;
+								}
+								catch (MalformedURLException mURLe)
+								{
+									System.out.println("[ERROR] L'URL vers le plugin \""+plugin.getName()
+											+"\" est mal définie:\n"+mURLe.getMessage());
+									break;
+								}
+							}
+						}
+					}
+					if(found)
+					{
+						break;
+					}
+				}
+			}
+		}
 		try
 		{
 			urls.add(new URL("file:"+this.path+descriptor.getPath()+File.separator));
@@ -83,24 +131,19 @@ public class Core implements ICore
 		{
 			System.out.println("[ERROR] Le chemin défini vers \""+descriptor.getName()+"\" est incorrect"+
 						"\n"+mURLe.getMessage());
-			return false;
+			return null;
 		}
 		URLClassLoader ucl=new URLClassLoader((URL[]) urls.toArray(new URL[0]),ClassLoader.getSystemClassLoader());
         try
         {
-			c = (Class<IPlugin>) Class.forName(descriptor.getClassName(),false,ucl);
+			c = Class.forName(descriptor.getClassName(),false,ucl);
 		} 
         catch (ClassNotFoundException cnfe)
         {
 			System.out.println("[ERROR] La classe \""+descriptor.getClassName()+"\" pour le plugin \""+
 						descriptor.getName()+"\" n'a pas été trouvée");
-			return false;
+			return null;
 		}
-        
-        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
-         * son descripteur et on dit qu'il a ete charge
-         */
-		descriptor.setLoaded(true);
 
 		@SuppressWarnings("rawtypes")
 		Constructor constructor=null;
@@ -124,7 +167,7 @@ public class Core implements ICore
 				{
 					return this.loadPlugin(descriptor, !active);
 				}
-				return false;
+				return null;
 			}
 			catch (SecurityException se)
 			{
@@ -135,7 +178,7 @@ public class Core implements ICore
 				{
 					return this.loadPlugin(descriptor, !active);
 				}
-				return false;
+				return null;
 			}
 		}
 	    try
@@ -146,7 +189,7 @@ public class Core implements ICore
 			}
 			else
 			{
-				descriptor.setPluginInstance(c.newInstance());
+				descriptor.setPluginInstance((IPlugin) c.newInstance());
 			}
 		}
 		catch (InstantiationException ie)
@@ -158,7 +201,7 @@ public class Core implements ICore
 			{
 				return this.loadPlugin(descriptor, !active);
 			}
-			return false;
+			return null;
 		}
 		catch (IllegalAccessException iae)
 		{
@@ -169,7 +212,7 @@ public class Core implements ICore
 			{
 				return this.loadPlugin(descriptor, !active);
 			}
-			return false;
+			return null;
 		}
 	    catch (IllegalArgumentException iae)
 		{
@@ -180,7 +223,7 @@ public class Core implements ICore
 			{
 				return this.loadPlugin(descriptor, !active);
 			}
-			return false;
+			return null;
 		}
 	    catch (InvocationTargetException ite)
 		{
@@ -191,37 +234,38 @@ public class Core implements ICore
 			{
 				return this.loadPlugin(descriptor, !active);
 			}
-			return false;
+			return null;
 		}
-        return true;
+        return descriptor.getPluginInstance();
 	}
 
 	/* (non-Javadoc)
 	 * @see main.ICore#loadConfigs(java.lang.String)
 	 */
 	@Override
-	public boolean loadConfigs(String fileName)
+	public boolean loadConfigs()
 	{
     	Properties p=new Properties();
         System.out.println("[LOG] Chargement des configurations...");
 		try
 	    {
-			p.load(new FileReader(fileName));
+			p.load(new FileReader(this.fileName));
 		}
 		catch (FileNotFoundException e)
 		{
-			System.out.println("[ERROR] Impossible de charger le ficher \""+fileName+"\"\n"+e.getMessage());
+			System.out.println("[ERROR] Impossible de charger le ficher \""+this.fileName+"\"\n"+e.getMessage());
 			return false;
 		}
 		catch (IOException e)
 		{
-			System.out.println("[ERROR] Erreur lors de l'ouverture du ficher \""+fileName+"\"\n"+e.getMessage());
+			System.out.println("[ERROR] Erreur lors de l'ouverture du ficher \""+this.fileName+"\"\n"+e.getMessage());
 			return false;
 		}
 		this.path=p.getProperty("pluginsPath");
+		this.path=this.path==null?p.getProperty("PluginsPath"):p.getProperty("pluginsPath");
 		if(this.path==null)
 		{
-			System.out.println("[ERROR] Le fichier \""+fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
+			System.out.println("[ERROR] Le fichier \""+this.fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
 			return false;
 		}
 		System.out.println("[LOG] Plugins présents dans: \""+path+"\"");
@@ -229,99 +273,147 @@ public class Core implements ICore
 		System.out.println("\t---------------------------------");
 		for(Object k:p.keySet())
 		{
-			if(!((String)k).equals("pluginsPath"))
+			if(!((String)k).equalsIgnoreCase("pluginsPath"))
 			{
 				String pluginName=(String)k;
 				String pluginPath=(String)p.getProperty((String) k);
-				System.out.printf("\t%-22s\t%s\n",pluginName,pluginPath);
-				String pluginFileConfig=path+pluginPath+File.separator+"config.ini";
-				Properties prop=new Properties();
-				try
+				
+				IPluginDescriptor descriptor=this.getPluginConfig(pluginName, pluginPath);
+				if(descriptor!=null)
 				{
-					prop.load(new FileReader(pluginFileConfig));
+					this.plugins.add(descriptor);
 				}
-				catch (FileNotFoundException e)
-				{
-					System.out.println("[ERROR]\t - Impossible de charger le ficher \""+pluginFileConfig+"\"\n"
-										+e.getMessage());
-					continue;
-				}
-				catch (IOException e)
-				{
-					System.out.println("[ERROR]\t - Erreur lors de l'ouverture du ficher \""+pluginFileConfig+"\"\n"
-										+e.getMessage());
-					continue;
-				}
-				String className=prop.getProperty("className");
-				if(className==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"className\"");
-					continue;
-				}
-				String interfaces=prop.getProperty("interfaces");
-				ArrayList<String> pluginInterfaces=new ArrayList<String>();
-				if(interfaces==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"interfaces\"");
-					continue;
-				}
-				if(interfaces.length()>0)
-				{
-					pluginInterfaces=new ArrayList<String>(Arrays.asList(interfaces.replaceAll(" ", "").split(",")));
-				}
-				String libraries=prop.getProperty("libraries");
-				ArrayList<String> pluginLibraries=new ArrayList<String>();
-				if(libraries==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"libraries\"");
-					continue;
-				}
-				if(libraries.length()>0)
-				{
-					pluginLibraries=new ArrayList<String>(Arrays.asList(libraries.replaceAll(" ", "").split(",")));
-				}
-				String dependencies=prop.getProperty("dependencies");
-				ArrayList<String> pluginDependencies=new ArrayList<String>();
-				if(dependencies==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"dependencies\"");
-					continue;
-				}
-				if(dependencies.length()>0)
-				{
-					pluginDependencies=new ArrayList<String>(Arrays.asList(dependencies.replaceAll(" ", "").split(",")));
-				}
-				String pluginLazy=prop.getProperty("lazy");
-				if(pluginLazy==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"lazy\"");
-					continue;
-				}
-				boolean pluginIsLazy=(pluginLazy.equalsIgnoreCase("true"));
-				String pluginActive=prop.getProperty("active");
-				if(pluginActive==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"active\"");
-					continue;
-				}
-				boolean pluginIsActive=(pluginActive.equalsIgnoreCase("true"));
-				String pluginDefault=prop.getProperty("default");
-				if(pluginDefault==null)
-				{
-					System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"default\"");
-					continue;
-				}
-				boolean pluginIsDefault=(pluginDefault.equalsIgnoreCase("true"));
-				System.out.printf("\t  |-> %-10s %s\n\t  |-> %-10s %s\n\t  '-> %-10s %s\n",
-						"Default:",pluginIsDefault?"Oui":"Non",
-						"Active:",pluginIsActive?"Oui":"Non",
-						"Lazy:",pluginIsLazy?"Oui":"Non");
-				PluginDescriptor descriptor=new PluginDescriptor(pluginName,pluginPath,pluginIsDefault,
-						pluginIsActive,pluginIsLazy,className,pluginInterfaces,pluginLibraries,pluginDependencies);
-				this.plugins.add(descriptor);
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Return the boolean property from a config file
+	 * @param prop : {@link Properties}, The properties
+	 * @param propertyName : {@link String}, The property name
+	 * @param pluginFileConfig : {@link String}, The plugin file config
+	 * @return {@link Boolean}, The boolean property
+	 */
+	private Boolean getBooleanProperty(Properties prop, String propertyName,
+			String pluginFileConfig)
+	{
+		String property=prop.getProperty(propertyName);
+		if(property==null)
+		{
+			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"lazy\"");
+			return null;
+		}
+		return (property.equalsIgnoreCase("true"));
+	}
+
+	/**
+	 * Return the array property from a config file
+	 * @param prop : {@link Properties}, The properties
+	 * @param propertyName : {@link String}, The property name
+	 * @param pluginFileConfig : {@link String}, The plugin file config
+	 * @return {@link ArrayList}<{@link String}>, The array property
+	 */
+	private ArrayList<String> getArrayProperty(Properties prop, String propertyName,
+			String pluginFileConfig)
+	{
+		String property=prop.getProperty(propertyName);
+		ArrayList<String> array=new ArrayList<String>();
+		if(property==null)
+		{
+			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"interfaces\"");
+			return null;
+		}
+		if(property.length()>0)
+		{
+			array=new ArrayList<String>(Arrays.asList(property.replaceAll(" ", "").split(",")));
+		}
+		return array;
+	}
+
+	/* (non-Javadoc)
+	 * @see main.ICore#getPluginConfig(java.lang.String,java.lang.String)
+	 */
+	public IPluginDescriptor getPluginConfig(String pluginName, String pluginPath)
+	{
+		System.out.printf("\t%-22s\t%s\n",pluginName,pluginPath);
+		String pluginFileConfig=path+pluginPath+File.separator+"config.ini";
+		Properties prop=new Properties();
+		try
+		{
+			prop.load(new FileReader(pluginFileConfig));
+		}
+		catch (FileNotFoundException e)
+		{
+			System.out.println("[ERROR]\t - Impossible de charger le ficher \""+pluginFileConfig+"\"\n"
+								+e.getMessage());
+			return null;
+		}
+		catch (IOException e)
+		{
+			System.out.println("[ERROR]\t - Erreur lors de l'ouverture du ficher \""+pluginFileConfig+"\"\n"
+								+e.getMessage());
+			return null;
+		}
+		String className=this.getStringProperty(prop, "className", pluginFileConfig);
+		if(className==null)
+		{
+			return null;
+		}
+		ArrayList<String> pluginInterfaces=this.getArrayProperty(prop, "interfaces", pluginFileConfig);
+		if(pluginInterfaces==null)
+		{
+			return null;
+		}
+		ArrayList<String> pluginLibraries=this.getArrayProperty(prop, "libraries", pluginFileConfig);
+		if(pluginLibraries==null)
+		{
+			return null;
+		}
+		ArrayList<String> pluginDependencies=this.getArrayProperty(prop, "dependencies", pluginFileConfig);
+		if(pluginDependencies==null)
+		{
+			return null;
+		}
+		Boolean pluginIsLazy=this.getBooleanProperty(prop, "lazy", pluginFileConfig);
+		if(pluginIsLazy==null)
+		{
+			return null;
+		}
+		Boolean pluginIsActive=this.getBooleanProperty(prop, "active", pluginFileConfig);
+		if(pluginIsActive==null)
+		{
+			return null;
+		}
+		Boolean pluginIsDefault=this.getBooleanProperty(prop, "default", pluginFileConfig);
+		if(pluginIsDefault==null)
+		{
+			return null;
+		}
+		System.out.printf("\t  |-> %-10s %s\n\t  |-> %-10s %s\n\t  '-> %-10s %s\n",
+				"Default:",pluginIsDefault?"Oui":"Non",
+				"Active:",pluginIsActive?"Oui":"Non",
+				"Lazy:",pluginIsLazy?"Oui":"Non");
+		PluginDescriptor descriptor=new PluginDescriptor(pluginName,pluginPath,pluginIsDefault,
+				pluginIsActive,pluginIsLazy,className,pluginInterfaces,pluginLibraries,pluginDependencies);
+		return descriptor;
+	}
+
+	/**
+	 * Return the string property from a config file
+	 * @param prop : {@link Properties}, The properties
+	 * @param propertyName : {@link String}, The property name
+	 * @param pluginFileConfig : {@link String}, The plugin file config
+	 * @return {@link String}, The string property
+	 */
+	private String getStringProperty(Properties prop, String propertyName, String pluginFileConfig)
+	{
+		String property=prop.getProperty(propertyName);
+		if(property==null)
+		{
+			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"className\"");
+		}
+		return property;
 	}
 
 	/* (non-Javadoc)
@@ -404,6 +496,22 @@ public class Core implements ICore
 	{
 		return this.path;
 	}
+
+	/**
+	 * Définit le fichier de configuration de la plateforme
+	 * @param fileName : {@link String}, Le nom du fichier de configuration
+	 */
+//	private void setFileName(String fileName)
+	public void setFileName(String fileName)
+	{
+		this.fileName=fileName;
+	}
+	
+	public void setPath(String path)
+	{
+		this.path=path;
+	}
+
 	
 	/**
 	 * The main function
@@ -413,8 +521,8 @@ public class Core implements ICore
 	{
 		System.out.println("[LOG] Chargement du coeur...");
 		Core core=new Core();
-		String fileName="config.ini";
-		if(core.loadConfigs(fileName))
+		core.setFileName("config.ini");
+		if(core.loadConfigs())
 		{
 			System.out.println("[LOG] Configurations chargées");			
 		}
@@ -423,9 +531,14 @@ public class Core implements ICore
 		{
 			if(plugin.isDefault())
 			{
-				if(core.loadPlugin(plugin,plugin.isActive()))
+				if(core.loadPlugin(plugin,plugin.isActive())!=null)
 				{
 					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" a été chargé");
+			        
+			        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
+			         * son descripteur et on dit qu'il a ete charge
+			         */
+					plugin.setLoaded(true);
 				}
 				else
 				{
@@ -436,5 +549,4 @@ public class Core implements ICore
 		System.out.println("[LOG] Fin d'exécution");
         
 	}
-
 }

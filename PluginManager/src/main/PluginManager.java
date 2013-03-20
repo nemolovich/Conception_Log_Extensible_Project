@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
@@ -22,11 +23,12 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration.Node;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.lang.StringUtils;
 
 import view.PluginManagerView;
 
 /**
- * @author COMPUMONSTER
+ * @author Brian GOHIER
  *
  */
 public class PluginManager implements IPlugin
@@ -37,6 +39,10 @@ public class PluginManager implements IPlugin
 	private String pluginManagerPath="/";
 	private String workspace="/";
 	
+	/**
+	 * The PluginManager active constructor
+	 * @param core : {@link ICore}, The core
+	 */
 	public PluginManager(ICore core)
 	{
 		this.core=core;
@@ -65,7 +71,14 @@ public class PluginManager implements IPlugin
 		this.name = name;
 	}
 	
-	public boolean copyFile(String pluginPath, String tempFolder, String fileName)
+	/**
+	 * Copy a file from a path to another
+	 * @param pluginPath : {@link String}, The destination path
+	 * @param tempFolder : {@link String}, The source path
+	 * @param fileName : {@link String}, The file name
+	 * @return {@link Boolean boolean}, If the file has been correctly copied
+	 */
+	private boolean copyFile(String pluginPath, String tempFolder, String fileName)
 	{
 		try
 		{
@@ -80,7 +93,12 @@ public class PluginManager implements IPlugin
 		}
 	}
 	
-	public ArrayList<String> getLines(String buffer)
+	/**
+	 * Return the lines list from a string buffer
+	 * @param buffer : {@link String}, The buffer
+	 * @return {@link ArrayList}<{@link String}>, The lines list
+	 */
+	private ArrayList<String> getLines(String buffer)
 	{
 		ArrayList<String> lines=new ArrayList<String>();
 		String line="";
@@ -99,7 +117,15 @@ public class PluginManager implements IPlugin
 		return lines;
 	}
 	
-	public String getLinesFrom(ArrayList<String> lines, String name, int start, int end)
+	/**
+	 * Return the string lines from a lines list
+	 * @param lines : {@link ArrayList}<{@link String}>, The lines list
+	 * @param name : {@link String}, The plugin name
+	 * @param start : {@link Integer int}, The start line number
+	 * @param end : {@link Integer int}, The end line number
+	 * @return {@link String}, The string lines
+	 */
+	private String getLinesFrom(ArrayList<String> lines, String name, int start, int end)
 	{
 		String result="";
 		int i=1;
@@ -119,7 +145,14 @@ public class PluginManager implements IPlugin
 		return result;
 	}
 	
-	public boolean createMainClass(String path, String className, boolean active)
+	/**
+	 * Create a class file in a path from a plugin name
+	 * @param path : {@link String}, The path to create the class
+	 * @param className : {@link String}, The plugin name
+	 * @param active : {@link Boolean boolean}, If the plugin is active
+	 * @return {@link Boolean boolean}, If the class has been correctly created
+	 */
+	private boolean createMainClass(String path, String className, boolean active)
 	{
 		System.out.println("[INFO] Création de la classe \""+className+".java\"...");
 		FileInputStream fi=null;
@@ -176,7 +209,12 @@ public class PluginManager implements IPlugin
 		return true;
 	}
 	
-	public boolean makeDir(String folder)
+	/**
+	 * Create a directory
+	 * @param folder : {@link String}, The directory name
+	 * @return {@link Boolean boolean}, If the directory has been correctly created
+	 */
+	private boolean makeDir(String folder)
 	{
 		if(new File(folder).mkdir())
 		{
@@ -185,12 +223,17 @@ public class PluginManager implements IPlugin
 		}
 		else
 		{
-			System.out.println("[ERROR] Le dossier \""+folder+"\" existe déjà");
-//			return false;
-			return true;
+			System.out.println("[INFO] Le dossier \""+folder+"\" existe déjà");
+			return false;
+//			return true;
 		}
 	}
 	
+	/**
+	 * Return true if the project exists
+	 * @param projectName : {@link String}, The project name
+	 * @return {@link Boolean boolean}, If the project exists
+	 */
 	public boolean isExistingProject(String projectName)
 	{
 		if(new File(this.workspace+projectName).isDirectory())
@@ -203,7 +246,13 @@ public class PluginManager implements IPlugin
 		}
 	}
 	
-	public boolean deleteDirectory(String pathName) throws IOException
+	/**
+	 * Delete a directory from path name
+	 * @param pathName : {@link String}, The path name
+	 * @return {@link Boolean boolean}, If the directory has been correctly deleted
+	 * @throws IOException
+	 */
+	private boolean deleteDirectory(String pathName) throws IOException
 	{
 		File path=new File(pathName);
 		try
@@ -243,7 +292,6 @@ public class PluginManager implements IPlugin
 	 * @param active : {@link Boolean boolean}, If the plugin is active
 	 * @return
 	 */
-//	@SuppressWarnings("resource")
 	public boolean addPlugin(String pluginName, boolean isDefault, boolean isActive, boolean isLazy,
 			ArrayList<IPluginDescriptor> parents, boolean erase)
 	{
@@ -557,7 +605,7 @@ public class PluginManager implements IPlugin
 		try
 		{
 			prop.store(new FileOutputStream(new File(pluginDir+"config.ini"))," "+pluginName+
-					" configs (auto-generated by "+this.getName()+")");
+					" config (auto-generated by "+this.getName()+")");
 		}
 		catch (FileNotFoundException fnfe)
 		{
@@ -578,6 +626,10 @@ public class PluginManager implements IPlugin
 		return true;
 	}
 	
+	/**
+	 * Return the eclipse workspace
+	 * @return {@link String}, The workspace
+	 */
 	public String getWorkspace()
 	{
 		return this.workspace;
@@ -597,27 +649,38 @@ public class PluginManager implements IPlugin
 	 * Load a plugin on {@link Core}
 	 * @param descriptor : {@link IPluginDescriptor1}, The plugin descriptor
 	 * @param active : {@link Boolean boolean}, If the loading is active
-	 * @return {@link Boolean boolean}, If the plugin has been correctly loaded
+	 * @return {@link IPlugin}, The plugin if it has been successfully loaded
 	 */
-	public boolean loadPlugin(IPluginDescriptor descriptor, boolean active)
+	public IPlugin loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
 		return this.core.loadPlugin(descriptor, active);
 	}
 
 	/**
-	 * @return the pluginManagerPath
+	 * Return the PluginManager path
+	 * @return {@link String}, The PluginManager path
 	 */
 	public String getPluginManagerPath()
 	{
-		return pluginManagerPath;
+		return this.pluginManagerPath;
 	}
 
 	/**
-	 * @param pluginManagerPath the pluginManagerPath to set
+	 * Set the PluginManager path
+	 * @param {@link String}, The PluginManager path
 	 */
 	public void setPluginManagerPath(String pluginManagerPath)
 	{
 		this.pluginManagerPath = pluginManagerPath;
+	}
+	
+	/**
+	 * Return the {@link ICore} path
+	 * @return {@link String}, The core path
+	 */
+	public String getCorePath()
+	{
+		return this.core.getPath();
 	}
 
 	/**
@@ -628,6 +691,155 @@ public class PluginManager implements IPlugin
 	{
 		return this.core.getPlugins();
 	}
+
+	/**
+	 * Return the {@link IPluginDescriptor plugin descriptor} from his file
+	 * @param pluginName : {@link String}, The plugin name
+	 * @param pluginPath : {@link String}, The plugin path
+	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 */
+	public IPluginDescriptor getPluginConfig(String pluginName, String pluginPath)
+	{
+		return this.core.getPluginConfig(pluginName, pluginPath);
+	}
+	
+	/**
+	 * Set the plugin attributes from his {@link IPluginDescriptor descriptor}
+	 * @param plugin : {@link IPluginDescriptor}, The plugin descriptor
+	 * @return {@link Boolean boolean}, If the plugin has been found
+	 */
+	public boolean setPluginConfig(IPluginDescriptor plugin)
+	{
+		for(IPluginDescriptor desc:this.core.getPlugins())
+		{
+			if(desc.getName().equals(plugin.getName()))
+			{
+				String pluginFileConfig=this.core.getPath()+plugin.getPath()+File.separator+"config.ini";
+				Properties prop=new Properties();
+				prop.setProperty("className", plugin.getClassName());
+				prop.setProperty("active",plugin.isActive()?"true":"false");
+				prop.setProperty("default",plugin.isDefault()?"true":"false");
+				prop.setProperty("lazy",plugin.isLazy()?"true":"false");
+				String[] interfacesArray=plugin.getInterfaces().toArray(new String[0]);
+				String interfaces=StringUtils.join(interfacesArray,",");
+				prop.setProperty("interfaces",interfaces);
+				String[] dependenciesArray=plugin.getDependencies().toArray(new String[0]);
+				String dependencies=StringUtils.join(dependenciesArray,",");
+				prop.setProperty("dependencies",dependencies);
+				String[] librariesArray=plugin.getLibraries().toArray(new String[0]);
+				String libraries=StringUtils.join(librariesArray,",");
+				prop.setProperty("libraries",libraries);
+				try
+				{
+					prop.store(new FileOutputStream(pluginFileConfig)," "+plugin.getName()+
+							" configs (auto-generated by "+this.getName()+")");
+					return true;
+				}
+				catch (FileNotFoundException fnfe)
+				{
+					System.out.println("[ERROR] Le fichier \""+pluginFileConfig+"\" n'a pas été trouvé");
+				}
+				catch (IOException ioe)
+				{
+					System.out.println("[ERROR] Erreur lors de l'enregistrement de \""+
+								pluginFileConfig+"\":\n"+ioe.getMessage());
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Import a plugin from his eclipse project path
+	 * @param folder : {@link File}, The project path
+	 * @return {@link Boolean boolean}, If the project has been correctly imported
+	 */
+	public boolean importProject(File folder)
+	{
+		String path=folder.getPath().toString()+File.separator;
+		if(!new File(path+"config.ini").isFile())
+		{
+			System.out.println("[ERROR] Le projet ne contient pas de fichier de configuration");
+			return false;
+		}
+		String pluginName=folder.getName();
+		this.makeDir(this.core.getPath()+pluginName+File.separator);
+		try
+		{
+			Files.copy(new File(path+"config.ini").toPath(),new File(this.core.getPath()+
+					pluginName+File.separator+"config.ini").toPath(),REPLACE_EXISTING);
+		}
+		catch (IOException ioe)
+		{
+			System.out.println("[ERROR] Erreur lors de la copie du fichier de configuration");
+			return false;
+		}
+		File binaries=new File(path+"bin"+File.separator);
+		if(!binaries.exists()||binaries.listFiles().length<1)
+		{
+			System.out.println("[ERROR] Le projet ne semble pas avoir été compilé");
+			return false;
+		}
+		Properties prop=new Properties();
+		try
+		{
+			prop.load(new FileReader(this.core.getPath().substring(0,
+					this.core.getPath().lastIndexOf("plugins"))+"config.ini"));
+			prop.setProperty(pluginName, pluginName);
+			prop.store(new FileOutputStream(this.core.getPath().substring(0,
+					this.core.getPath().lastIndexOf("plugins"))+"config.ini"),
+					" Core config (auto-generated by "+this.getName()+")");
+		}
+		catch (FileNotFoundException e)
+		{
+			System.out.println("[ERROR] Le fichier de configuration de la plateforme n'a" +
+					" pas été trouvé");
+			return false;
+		}
+		catch (IOException e)
+		{
+			System.out.println("[ERROR] Erreur lors du chargement des configurations de la" +
+					" plateforme");
+			return false;
+		}
+		
+		return this.copyFolder(binaries,new File(this.core.getPath()+
+				pluginName+File.separator));
+	}
+	
+	/**
+	 * Copy a folder and its content from a source to destination
+	 * @param source : {@link File}, The source folder
+	 * @param destination : {@link File}, The destination folder
+	 * @return {@link Boolean boolean}, If the folder has been correctly copied
+	 */
+	private boolean copyFolder(File source, File destination)
+	{
+		this.makeDir(destination.toString());
+		for(File file:source.listFiles())
+		{
+			if(file.isFile())
+			{
+				try
+				{
+					Files.copy(file.toPath(), new File(destination.toString()+File.separator+
+							file.getName()).toPath(),REPLACE_EXISTING);
+				}
+				catch (IOException e)
+				{
+
+					System.out.println("[ERROR] Erreur lors dela copie du fichier \""+
+							destination.toString()+File.separator+file.getName()+"\"");
+				}
+			}
+			else if(file.isDirectory())
+			{
+				this.copyFolder(file, new File(destination.toString()+File.separator+
+						file.getName()));
+			}
+		}
+		return true;
+	}
 	
 	/**
 	 * Main function
@@ -636,11 +848,11 @@ public class PluginManager implements IPlugin
 	public static void main(String[] args)
 	{
 		System.out.println("PluginManager");
-		Core core=new Core();
-		core.setFileName("config.ini");
-		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
-		core.loadConfigs();
-		new PluginManager(core);
+//		Core core=new Core();
+//		core.setFileName("config.ini");
+//		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
+//		core.loadConfigs();
+//		new PluginManager(core);
 //		new PluginManager(null);
 	}
 

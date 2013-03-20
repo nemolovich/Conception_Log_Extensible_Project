@@ -227,7 +227,7 @@ public class PluginDescriptor implements IPluginDescriptor
 	@Override
 	public void setLoaded(boolean loaded)
 	{
-		this.isLoaded=true;
+		this.isLoaded=loaded;
 	}
 
 	/* (non-Javadoc)
