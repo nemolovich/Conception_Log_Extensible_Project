@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -260,6 +261,8 @@ public class PluginManager implements IPlugin
 			if(path.isDirectory())
 			{
 				Files.deleteIfExists(path.toPath());
+				System.out.println("[LOG] Dossier \""+path.getName()+"\" supprimé");
+				return true;
 			}
 		}
 		catch(DirectoryNotEmptyException dnee)
@@ -270,6 +273,8 @@ public class PluginManager implements IPlugin
 				{
 					if(!this.deleteDirectory(f.getAbsolutePath()))
 					{
+						System.out.println("[ERROR] Impossible de supprimer le dossier \""+
+									f.getName()+"\"");
 						return false;
 					}
 				}
@@ -277,6 +282,8 @@ public class PluginManager implements IPlugin
 				{
 					if(!Files.deleteIfExists(f.toPath()))
 					{
+						System.out.println("[ERROR] Impossible de supprimer le fichier \""+
+								f.getName()+"\"");
 						return false;
 					}
 				}
@@ -404,12 +411,16 @@ public class PluginManager implements IPlugin
 		prop.setProperty("lazy",isLazy?"true":"false");
 		
 		String interfaces="";
+		String libraries="";
 		if(parents!=null&&parents.size()>0)
 		{
 			for(IPluginDescriptor parent:parents)
 			{
 				if(parent!=null&&parent.getDependencies()!=null&&parent.getDependencies().size()>0)
-				{
+				{					
+					/*
+					 * The dependencies libraries
+					 */
 					FileOutputStream jar_lib = null;
 					try
 					{
@@ -587,11 +598,31 @@ public class PluginManager implements IPlugin
 					}
 					interfaces=interfaces.substring(0, interfaces.length()-1);
 				}
+
+
+				if(parent!=null&&parent.getLibraries()!=null&&parent.getLibraries().size()>0)
+				{
+					/*
+					 * The libraries of parent
+					 */
+					for(String lib:parent.getLibraries())
+					{
+						libraries+=lib+",";
+						if(!this.copyFile(pluginDir+"lib"+File.separator, this.core.getPath()+
+								"libs"+File.separator, lib))
+						{
+							System.out.println("[ERROR] La librairie \""+lib+"\" n'a pas " +
+									"pû être exportée vers le plugin \""+pluginName+"\"");
+							return false;
+						}
+					}
+					libraries=libraries.substring(0, libraries.length()-1);
+				}
 			}
 		}
+		prop.setProperty("libraries",libraries);
 		prop.setProperty("interfaces",interfaces);
 		prop.setProperty("dependencies","");
-		prop.setProperty("libraries","");
 		try
 		{
 			config.save(new File(pluginDir+".classpath"));
@@ -636,11 +667,11 @@ public class PluginManager implements IPlugin
 	}
 	
 	/**
-	 * Returns the {@link IPlugin} from his {@link IPluginDescriptor1#getName() name}
+	 * Returns the {@link Object} from his {@link IPluginDescriptor1#getName() name}
 	 * @param pluginName
 	 * @return {@link String}
 	 */
-	public IPlugin getPlugin(String pluginName)
+	public Object getPlugin(String pluginName)
 	{
 		return this.core.getPlugin(pluginName);
 	}
@@ -649,9 +680,9 @@ public class PluginManager implements IPlugin
 	 * Load a plugin on {@link Core}
 	 * @param descriptor : {@link IPluginDescriptor1}, The plugin descriptor
 	 * @param active : {@link Boolean boolean}, If the loading is active
-	 * @return {@link IPlugin}, The plugin if it has been successfully loaded
+	 * @return {@link Object}, The plugin if it has been successfully loaded
 	 */
-	public IPlugin loadPlugin(IPluginDescriptor descriptor, boolean active)
+	public Object loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
 		return this.core.loadPlugin(descriptor, active);
 	}
@@ -748,19 +779,32 @@ public class PluginManager implements IPlugin
 		}
 		return false;
 	}
+	
+	/**
+	 * Get the plugin descriptor by {@link IPluginDescriptor#getName() name}.
+	 * from the plugins loaded in core.
+	 * @param pluginName - {@link String}, The plugin name
+	 * @return {@link IPluginDescriptor}, The plugin descriptor null if does not exist
+	 */
+	public IPluginDescriptor getPluginDescriptor(String pluginName)
+	{
+		return this.core.getPluginDescriptor(pluginName);
+	}
 
 	/**
 	 * Import a plugin from his eclipse project path
 	 * @param folder : {@link File}, The project path
 	 * @return {@link Boolean boolean}, If the project has been correctly imported
 	 */
-	public boolean importProject(File folder)
+	public String importProject(File folder)
 	{
 		String path=folder.getPath().toString()+File.separator;
+		String error=null;
 		if(!new File(path+"config.ini").isFile())
 		{
-			System.out.println("[ERROR] Le projet ne contient pas de fichier de configuration");
-			return false;
+			error="Le projet ne contient pas de fichier de configuration";
+			System.out.println("[ERROR] "+error);
+			return error;
 		}
 		String pluginName=folder.getName();
 		this.makeDir(this.core.getPath()+pluginName+File.separator);
@@ -771,15 +815,62 @@ public class PluginManager implements IPlugin
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Erreur lors de la copie du fichier de configuration");
-			return false;
+			error="Erreur lors de la copie du fichier de configuration:\n"
+					+ioe.getMessage();
+			System.out.println("[ERROR] "+error);
+			return error;
 		}
 		File binaries=new File(path+"bin"+File.separator);
 		if(!binaries.exists()||binaries.listFiles().length<1)
 		{
-			System.out.println("[ERROR] Le projet ne semble pas avoir été compilé");
-			return false;
+			error="Le projet ne semble pas avoir été compilé";
+			System.out.println("[ERROR] "+error);
+			return error;
 		}
+
+		Properties plugProp=new Properties();
+		try
+		{
+			plugProp.load(new FileReader(path+"config.ini"));
+		}
+		catch (FileNotFoundException fnfe)
+		{
+			error="Impossible d'accéder au fichier de configuration du plugin";
+			System.out.println("[ERROR] "+error);
+			return error;
+		}
+		catch (IOException ioe)
+		{
+			error="Erreur lors de la récupération des configuration du plugin:\n"
+					+ioe.getMessage();
+			System.out.println("[ERROR] "+error);
+			return error;
+		}
+		String libraries=plugProp.getProperty("libraries");
+		if(libraries==null)
+		{
+			error="Le fichier de configuration ne contient pas d'attribut \"libraries\"";
+			System.out.println("[ERROR] "+error);
+			return error;
+		}
+		ArrayList<String> libs=new ArrayList<String>(Arrays.asList(libraries.split(",")));
+		String librariesPath=this.core.getPath()+"libs"+File.separator;
+		for(String lib:libs)
+		{
+			try
+			{
+				Files.copy(new File(path+"lib"+File.separator+lib).toPath(),
+						new File(librariesPath+lib).toPath(),REPLACE_EXISTING);
+			}
+			catch (IOException ioe)
+			{
+				error="Impossible de copier a librairie \""+lib+"\" " +
+						"sur la plateforme:\n"+ioe.getMessage();
+				System.out.println("[ERROR] "+error);
+				return error;
+			}
+		}
+		
 		Properties prop=new Properties();
 		try
 		{
@@ -790,21 +881,32 @@ public class PluginManager implements IPlugin
 					this.core.getPath().lastIndexOf("plugins"))+"config.ini"),
 					" Core config (auto-generated by "+this.getName()+")");
 		}
-		catch (FileNotFoundException e)
+		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Le fichier de configuration de la plateforme n'a" +
-					" pas été trouvé");
-			return false;
+			error="Le fichier de configuration de la plateforme n'a" +
+			" pas été trouvé";
+			System.out.println("[ERROR] "+error);
+			return error;
 		}
-		catch (IOException e)
+		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Erreur lors du chargement des configurations de la" +
-					" plateforme");
-			return false;
+			error="Erreur lors du chargement des configurations de la" +
+			" plateforme:\n"+ioe.getMessage();
+			System.out.println("[ERROR] "+error);
+			return error;
 		}
 		
-		return this.copyFolder(binaries,new File(this.core.getPath()+
-				pluginName+File.separator));
+		
+		if(this.copyFolder(binaries,new File(this.core.getPath()+
+				pluginName+File.separator)))
+		{
+			return error;
+		}
+		else
+		{
+			error="Impossible de copier le dossier "+this.core.getPath()+pluginName;
+			return error;
+		}
 	}
 	
 	/**
@@ -840,6 +942,37 @@ public class PluginManager implements IPlugin
 		}
 		return true;
 	}
+
+	/**
+	 * Remove the plugin from plugin list and platform plugins
+	 * @param plugin : {@link IPluginDescriptor}, The plugin
+	 * @return {@link Boolean boolean}, If the plugin 
+	 */
+	public boolean removePlugin(IPluginDescriptor plugin)
+	{
+		if(this.core.getPlugins().contains(plugin))
+		{
+			String pluginPath=this.getCorePath()+plugin.getPath()+File.separator;
+			try
+			{
+				if(!this.deleteDirectory(pluginPath))
+				{
+					System.out.println("[ERROR] Le dossier du plugin \""+plugin.getName()+
+							"\" n'a pas été supprimé");
+					return false;
+				}
+			}
+			catch(IOException ioe)
+			{
+				System.out.println("[ERROR] Erreur lors de la suppression du dossier du plugin " +
+						"\""+plugin.getName()+"\"");
+				return false;
+			}
+			return this.core.removePlugin(plugin);
+		}
+		System.out.println("[ERROR] Le plugin \""+plugin.getName()+"\" n'a pas été trouvé");
+		return false;
+	}
 	
 	/**
 	 * Main function
@@ -849,7 +982,7 @@ public class PluginManager implements IPlugin
 	{
 		System.out.println("PluginManager");
 //		Core core=new Core();
-//		core.setFileName("config.ini");
+//		core.setFileName("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/config.ini");
 //		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
 //		core.loadConfigs();
 //		new PluginManager(core);

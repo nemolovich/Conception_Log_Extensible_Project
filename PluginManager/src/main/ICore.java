@@ -19,10 +19,10 @@ public interface ICore
 	 * plugin descriptor
 	 * @param active - {@link Boolean boolean}, Set if the plugin
 	 * must be loaded with active status
-	 * @return {@link Boolean boolean}, True if the plugin have been 
-	 * successfully loaded
+	 * @return {@link Object}, The plugin if it has been successfully
+	 * loaded else null
 	 */
-	public abstract boolean loadPlugin(IPluginDescriptor descriptor,
+	public abstract Object loadPlugin(IPluginDescriptor descriptor,
 			boolean active);
 
 	/**
@@ -32,6 +32,13 @@ public interface ICore
 	 */
 	public abstract boolean loadConfigs();
 
+	/**
+	 * Get the {@link IPluginDescriptor plugin descriptor} from a plugin name
+	 * @param pluginName : {@link String}, The plugin name
+	 * @param pluginPath : {@link String}, The plugin path
+	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 */
+	public abstract IPluginDescriptor getPluginConfig(String pluginName, String pluginPath);
 	/**
 	 * Get the plugins list that implement the given interface name.
 	 * @param iplugin : {@link String}, The interface name
@@ -43,15 +50,15 @@ public interface ICore
 	 * Get the plugin by {@link IPlugin#getName() name} from
 	 * the plugins loaded in core.
 	 * @param pluginName - {@link String}, The plugin name
-	 * @return {@link IPlugin}, The plugin
+	 * @return {@link Object}, The plugin
 	 */
-	public abstract IPlugin getPlugin(String pluginName);
+	public abstract Object getPlugin(String pluginName);
 
 	/**
 	 * Get the plugin descriptor by {@link IPluginDescriptor#getName() name}.
 	 * from the plugins loaded in core.
 	 * @param pluginName - {@link String}, The plugin name
-	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 * @return {@link IPluginDescriptor}, The plugin descriptor, null if does not exist
 	 */
 	public abstract IPluginDescriptor getPluginDescriptor(String pluginName);
 
@@ -61,6 +68,13 @@ public interface ICore
 	 * @return {@link ArrayList}<{@link IPluginDescriptor}>, The plugin descriptor
 	 */
 	public abstract ArrayList<IPluginDescriptor> getPlugins();
+
+	/**
+	 * Remove the plugin from the list
+	 * @param plugin : {@link IPluginDescriptor}, The plugin
+	 * @return {@link Boolean boolean}, If the plugin has been removed
+	 */
+	public abstract boolean removePlugin(IPluginDescriptor plugin);
 
 	/**
 	 * Get the {@link IPluginDescriptor descriptors} created by attributes.

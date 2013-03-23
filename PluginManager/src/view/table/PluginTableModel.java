@@ -165,4 +165,16 @@ public class PluginTableModel extends AbstractTableModel
     	}
     }
 
+	public int getIndexOf(IPluginDescriptor existPlugin)
+	{
+		for(int i=0;i<this.getRowCount();i++)
+		{
+			if(this.datas.get(i).getName().equalsIgnoreCase(existPlugin.getName()))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
 }

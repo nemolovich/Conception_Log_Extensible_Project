@@ -45,8 +45,10 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 	private JButton displayFilePlugin=new JButton("<html><center>Afficher le fichier de configuration" +
 			"</center></html>");
 	private JButton loadPlugin=new JButton("Charger le plugin");
-	private JButton refreshPlugin=new JButton("Actualiser config");
+	private JButton refreshPlugin=new JButton("<html><center>Actualiser les<br/>" +
+			"configurations</center></html>");
 	private JButton importPlugin=new JButton("Importer un plugin");
+	private JButton removePlugin=new JButton("Supprimer le plugin");
 	private PluginTable pluginList;
 	private PluginManager pluginManager;
 	
@@ -107,11 +109,14 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		this.displayFilePlugin.setPreferredSize(new Dimension(175,40));
 		this.displayFilePlugin.setFont(newButtonFont);
 		buttonsPanel.add(this.refreshPlugin);
-		this.refreshPlugin.setPreferredSize(new Dimension(175,25));
+		this.refreshPlugin.setPreferredSize(new Dimension(175,40));
 		this.refreshPlugin.setFont(newButtonFont);
 		buttonsPanel.add(this.loadPlugin);
 		this.loadPlugin.setPreferredSize(new Dimension(175,25));
 		this.loadPlugin.setFont(newButtonFont);
+		buttonsPanel.add(this.removePlugin);
+		this.removePlugin.setPreferredSize(new Dimension(175,25));
+		this.removePlugin.setFont(newButtonFont);
 
 		this.addPlugin.addActionListener(this);
 		this.addPluginFrom.addActionListener(this);
@@ -119,11 +124,13 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		this.refreshPlugin.addActionListener(this);
 		this.loadPlugin.addActionListener(this);
 		this.importPlugin.addActionListener(this);
+		this.removePlugin.addActionListener(this);
 
 		this.displayFilePlugin.setEnabled(false);
 		this.addPluginFrom.setEnabled(false);
 		this.refreshPlugin.setEnabled(false);
 		this.loadPlugin.setEnabled(false);
+		this.removePlugin.setEnabled(false);
 		
 		addPlugins(plugins);
 
@@ -152,6 +159,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				this.refreshPlugin.setEnabled(true);
 				this.displayFilePlugin.setEnabled(true);
 				this.loadPlugin.setEnabled(true);
+				this.removePlugin.setEnabled(true);
 				if(!this.pluginList.getTableModel().getPlugin(row).isLoaded())
 				{
 					this.loadPlugin.setText("Charger le plugin");
@@ -166,6 +174,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				this.addPluginFrom.setEnabled(false);
 				this.refreshPlugin.setEnabled(false);
 				this.displayFilePlugin.setEnabled(false);
+				this.removePlugin.setEnabled(false);
 			}
         }
 	}
@@ -243,10 +252,35 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		    		choice=chooser.getCurrentDirectory();
 		    	}
 		    	String projectName=choice.getName();
-		    	if(!this.pluginManager.importProject(choice))
+		    	String importLog=this.pluginManager.importProject(choice);
+		    	if(importLog!=null)
 		    	{
-					JOptionPane.showMessageDialog(this, "Le projet \""+projectName+"\" n'a pas pu être chargé",
-								"Projet invalide", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
+							+"</i>\" n'a pas pu être chargé:<br/><FONT color=\"#880000\">" +
+							importLog+"</FONT></html>",
+							"Projet invalide", JOptionPane.ERROR_MESSAGE);
+		    	}
+		    	else
+		    	{
+					IPluginDescriptor newPlugin=this.pluginManager.getPluginConfig(projectName, projectName);
+					IPluginDescriptor existPlugin=this.pluginManager.getPluginDescriptor(newPlugin.getName());
+					if(existPlugin!=null)
+					{
+						existPlugin=newPlugin;
+						int index=this.pluginList.getTableModel().getIndexOf(existPlugin);
+						if(index>-1)
+						{
+							this.pluginList.getTableModel().updatePlugin(existPlugin,index);
+						}
+					}
+					else
+					{
+						this.pluginManager.getPluginsDescriptors().add(newPlugin);
+						this.pluginList.getTableModel().addPlugin(newPlugin);
+					}
+					JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
+							+"</i>\" a bien été importé</html>",
+							"Projet importé", JOptionPane.INFORMATION_MESSAGE);
 		    	}
 		    }
 		}
@@ -276,9 +310,12 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 						parent.getPath()+File.separator+"config.ini");
 					Desktop.getDesktop().open(configFile);
 				}
-				catch (IOException e)
+				catch (IOException ioe)
 				{
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(this, "<html>Le fichier de configuration de " +
+							"\"<i>"+parent.getName()+"</i>\" n'a pas pu être ouvert:<br/>" +
+							"<FONT color=\"#880000\">"+ioe.getMessage()+"</FONT></html>",
+							"Fichier invalide", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		}
@@ -300,6 +337,27 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 					JOptionPane.showMessageDialog(this, "Le fichier de configuration pour \""+
 								pluginName+"\" semble invalide",
 								"Fichier de configuration invalide", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		}
+		else if(event.getSource()==this.removePlugin)
+		{
+			if(parent!=null)
+			{
+				int remove=JOptionPane.showConfirmDialog(this, "<html><b>Attention!</b> Vous êtes sur " +
+						"le point de supprimer le plugin<br/><center>\"<i>"+parent.getName()+"</i>\"</center>" +
+						"Cette action est irreversible. Continuer?</html>",
+						"Supprimer le plugin?",	JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+				if(remove==0)
+				{
+					if(this.pluginManager.removePlugin(parent))
+					{
+						this.pluginList.getTableModel().removePlugin(row);
+						if(this.pluginList.getTableModel().getRowCount()>0)
+						{
+							this.pluginList.setRowSelectionInterval(0,0);
+						}
+					}
 				}
 			}
 		}
@@ -343,6 +401,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				this.addPluginFrom.setEnabled(true);
 				this.refreshPlugin.setEnabled(true);
 				this.displayFilePlugin.setEnabled(true);
+				this.removePlugin.setEnabled(true);
 				if(!this.pluginList.getTableModel().getPlugin(row).isLoaded())
 				{
 					this.loadPlugin.setText("Charger le plugin");
@@ -357,6 +416,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				this.addPluginFrom.setEnabled(false);
 				this.refreshPlugin.setEnabled(false);
 				this.displayFilePlugin.setEnabled(false);
+				this.removePlugin.setEnabled(false);
 			}
 		}
 	}

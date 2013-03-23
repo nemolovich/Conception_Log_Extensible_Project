@@ -43,7 +43,7 @@ public class PluginDescriptor implements IPluginDescriptor
 	/**
 	 * L'instance du plugin
 	 */
-	private IPlugin pluginInstance;
+	private Object pluginInstance;
 	/**
 	 * Les classes dont ont besoin les plugins qui dépendent de celui-ci
 	 */
@@ -240,19 +240,19 @@ public class PluginDescriptor implements IPluginDescriptor
 	}
 
 	/* (non-Javadoc)
-	 * @see main.plugin.IPluginDescriptor#setPluginInstance(main.plugin.IPlugin)
+	 * @see main.plugin.IPluginDescriptor#setPluginInstance(java.lang.Object)
 	 */
 	@Override
-	public void setPluginInstance(IPlugin p)
+	public void setPluginInstance(Object o)
 	{
-		this.pluginInstance=p;
+		this.pluginInstance=o;
 	}
 
 	/* (non-Javadoc)
 	 * @see main.plugin.IPluginDescriptor#getPluginInstance()
 	 */
 	@Override
-	public IPlugin getPluginInstance()
+	public Object getPluginInstance()
 	{
 		return this.pluginInstance;
 	}
@@ -325,5 +325,56 @@ public class PluginDescriptor implements IPluginDescriptor
 		out+=	",Loaded="+this.isLoaded+
 				"]";
 		return out;
+	}
+	
+	@Override
+	public boolean equals(IPluginDescriptor desc)
+	{
+		boolean equals=false;
+		equals=(desc.getClassName().equals(this.getClassName())&&
+				desc.getName().equals(this.getName())&&
+				desc.getPath().equals(this.getPath())&&
+				desc.isActive()==this.isActive()&&
+				desc.isDefault()==this.isDefault()&&
+				desc.isLazy()==this.isLazy()&&
+				desc.isLoaded()==this.isLoaded()&&
+				desc.getLibraries().size()==this.getLibraries().size()&&
+				desc.getInterfaces().size()==this.getInterfaces().size()&&
+				desc.getDependencies().size()==this.getDependencies().size()
+				);
+		if(equals)
+		{
+			if(desc.getLibraries().size()>0)
+			{
+				for(String lib:desc.getLibraries())
+				{
+					if(!this.libraries.contains(lib))
+					{
+						return false;
+					}
+				}
+			}
+			if(desc.getInterfaces().size()>0)
+			{
+				for(String ifc:desc.getInterfaces())
+				{
+					if(!this.interfaces.contains(ifc))
+					{
+						return false;
+					}
+				}
+			}
+			if(desc.getDependencies().size()>0)
+			{
+				for(String dep:desc.getDependencies())
+				{
+					if(!this.dependencies.contains(dep))
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return equals;
 	}
 }
