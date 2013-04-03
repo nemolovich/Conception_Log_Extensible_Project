@@ -1,6 +1,6 @@
 package main;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static main.utils.Files.REPLACE_EXISTING;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,8 +9,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -19,6 +17,8 @@ import java.util.zip.ZipOutputStream;
 
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
+import main.utils.DirectoryNotEmptyException;
+import main.utils.Files;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration.Node;
@@ -83,8 +83,9 @@ public class PluginManager implements IPlugin
 	{
 		try
 		{
-			Files.copy(new File(tempFolder+fileName).toPath(), 
-						new File(pluginPath+fileName).toPath(),REPLACE_EXISTING);
+			Files.copy(new File(tempFolder+fileName), 
+						new File(pluginPath+fileName),REPLACE_EXISTING);
+			
 			return true;
 		}
 		catch (IOException ioe)
@@ -158,7 +159,7 @@ public class PluginManager implements IPlugin
 		System.out.println("[INFO] Création de la classe \""+className+".java\"...");
 		FileInputStream fi=null;
 		FileOutputStream fo=null;
-		File tempFile=new File("temp"+File.separator+"example.java");
+		File tempFile=new File(this.pluginManagerPath+"temp"+File.separator+"example.java");
 		File classFile=new File(path+className+".java");
 		try
 		{
@@ -260,7 +261,7 @@ public class PluginManager implements IPlugin
 		{
 			if(path.isDirectory())
 			{
-				Files.deleteIfExists(path.toPath());
+				Files.deleteIfExists(path);
 				System.out.println("[LOG] Dossier \""+path.getName()+"\" supprimé");
 				return true;
 			}
@@ -280,7 +281,7 @@ public class PluginManager implements IPlugin
 				}
 				else
 				{
-					if(!Files.deleteIfExists(f.toPath()))
+					if(!Files.deleteIfExists(f))
 					{
 						System.out.println("[ERROR] Impossible de supprimer le fichier \""+
 								f.getName()+"\"");
@@ -372,7 +373,7 @@ public class PluginManager implements IPlugin
 		XMLConfiguration config=null;
 		try
 		{
-			config = new XMLConfiguration("temp/.project");
+			config = new XMLConfiguration(this.pluginManagerPath+"temp/.project");
 		}
 		catch (ConfigurationException ce)
 		{
@@ -396,7 +397,7 @@ public class PluginManager implements IPlugin
 		
 		try
 		{
-			config = new XMLConfiguration("temp/.classpath");
+			config = new XMLConfiguration(this.pluginManagerPath+"temp/.classpath");
 		}
 		catch (ConfigurationException ce)
 		{
@@ -810,8 +811,8 @@ public class PluginManager implements IPlugin
 		this.makeDir(this.core.getPath()+pluginName+File.separator);
 		try
 		{
-			Files.copy(new File(path+"config.ini").toPath(),new File(this.core.getPath()+
-					pluginName+File.separator+"config.ini").toPath(),REPLACE_EXISTING);
+			Files.copy(new File(path+"config.ini"),new File(this.core.getPath()+
+					pluginName+File.separator+"config.ini"),REPLACE_EXISTING);
 		}
 		catch (IOException ioe)
 		{
@@ -857,17 +858,20 @@ public class PluginManager implements IPlugin
 		String librariesPath=this.core.getPath()+"libs"+File.separator;
 		for(String lib:libs)
 		{
-			try
+			if(lib.length()>0)
 			{
-				Files.copy(new File(path+"lib"+File.separator+lib).toPath(),
-						new File(librariesPath+lib).toPath(),REPLACE_EXISTING);
-			}
-			catch (IOException ioe)
-			{
-				error="Impossible de copier a librairie \""+lib+"\" " +
-						"sur la plateforme:\n"+ioe.getMessage();
-				System.out.println("[ERROR] "+error);
-				return error;
+				try
+				{
+					Files.copy(new File(path+"lib"+File.separator+lib),
+							new File(librariesPath+lib),REPLACE_EXISTING);
+				}
+				catch (IOException ioe)
+				{
+					error="Impossible de copier a librairie \""+lib+"\" " +
+							"sur la plateforme:\n"+ioe.getMessage();
+					System.out.println("[ERROR] "+error);
+					return error;
+				}
 			}
 		}
 		
@@ -924,8 +928,8 @@ public class PluginManager implements IPlugin
 			{
 				try
 				{
-					Files.copy(file.toPath(), new File(destination.toString()+File.separator+
-							file.getName()).toPath(),REPLACE_EXISTING);
+					Files.copy(file, new File(destination.toString()+File.separator+
+							file.getName()),REPLACE_EXISTING);
 				}
 				catch (IOException e)
 				{
@@ -985,6 +989,7 @@ public class PluginManager implements IPlugin
 //		core.setFileName("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/config.ini");
 //		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
 //		core.loadConfigs();
+//		core.loadPlugin(core.getPluginDescriptor("PluginManager"), true);
 //		new PluginManager(core);
 //		new PluginManager(null);
 	}

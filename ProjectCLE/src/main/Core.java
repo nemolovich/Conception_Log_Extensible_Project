@@ -14,9 +14,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
+import javax.swing.ImageIcon;
+import javax.swing.UIManager;
+
+import main.ICore;
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
 import main.plugin.PluginDescriptor;
+import main.view.SplashScreen;
 
 public class Core implements ICore
 {
@@ -31,9 +36,28 @@ public class Core implements ICore
 	 */
 	private String path;
 	private String fileName;
+	private SplashScreen screen;
+
+	/**
+	 * Initialise le SplashScreen
+	 */
+	private void splashScreenInit()
+	{
+		ImageIcon myImage = new ImageIcon("img/SplashScreen.jpg");
+	    this.screen = new SplashScreen(myImage);
+	    this.screen.setLocationRelativeTo(null);
+	    this.screen.setProgressMax(100);
+	    this.screen.setScreenVisible(true);
+	}
+	
+	private void splashScreenDestruct()
+	{
+		this.screen.setScreenVisible(false);
+		this.screen.dispose();
+	}
 	
 	/**
-	 * Retourne l'URL du chemin vers une librairie donnÃ©e
+	 * Retourne l'URL du chemin vers une librairie donnée
 	 * @param librarieName : {@link String}, The library name
 	 * @return {@link URL}, The URL to library path
 	 */
@@ -46,7 +70,7 @@ public class Core implements ICore
 		}
 		catch (MalformedURLException mURLe)
 		{
-			System.out.println("[ERROR] Le chemin dÃ©fini vers \""+librarieName+"\" est incorrect"+
+			System.out.println("[ERROR] Le chemin défini vers \""+librarieName+"\" est incorrect"+
 					"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -55,6 +79,7 @@ public class Core implements ICore
 	/* (non-Javadoc)
 	 * @see main.ICore#loadPlugin(main.plugin.IPluginDescriptor, boolean)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
@@ -65,7 +90,7 @@ public class Core implements ICore
 		if(descriptor.getInterfaces().size()>0)
 		{
 			/*
-			 * Pour toutes les interfaces dont dÃ©pend le plugin
+			 * Pour toutes les interfaces dont dépend le plugin
 			 */
 			for(String intfce:descriptor.getInterfaces())
 			{
@@ -83,7 +108,7 @@ public class Core implements ICore
 						for(String depd:plugin.getDependencies())
 						{
 							/*
-							 * Si l'interface est celle dÃ©sirÃ©e, on ajoute son path dans le classloader
+							 * Si l'interface est celle désirée, on ajoute son path dans le classloader
 							 */
 							if(depd.equals(intfce))
 							{
@@ -96,7 +121,7 @@ public class Core implements ICore
 								catch (MalformedURLException mURLe)
 								{
 									System.out.println("[ERROR] L'URL vers le plugin \""+plugin.getName()
-											+"\" est mal dÃ©finie:\n"+mURLe.getMessage());
+											+"\" est mal définie:\n"+mURLe.getMessage());
 									break;
 								}
 							}
@@ -115,7 +140,7 @@ public class Core implements ICore
 			if(descriptor.getLibraries()!=null&&descriptor.getLibraries().size()>0)
 			{
 				/* Si le plugin depend de librairies on les ajoute au classloader
-				 * (Ces libraries doivent Ãªtre placÃ©es dans le dossier "libs" du
+				 * (Ces libraries doivent être placées dans le dossier "libs" du
 				 * path du coeur)
 				 */
 				for(String library:descriptor.getLibraries())
@@ -130,7 +155,7 @@ public class Core implements ICore
 		}
 		catch (MalformedURLException mURLe)
 		{
-			System.out.println("[ERROR] Le chemin dÃ©fini vers \""+descriptor.getName()+"\" est incorrect"+
+			System.out.println("[ERROR] Le chemin défini vers \""+descriptor.getName()+"\" est incorrect"+
 						"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -142,10 +167,26 @@ public class Core implements ICore
         catch (ClassNotFoundException cnfe)
         {
 			System.out.println("[ERROR] La classe \""+descriptor.getClassName()+"\" pour le plugin \""+
-						descriptor.getName()+"\" n'a pas Ã©tÃ© trouvÃ©e");
+						descriptor.getName()+"\" n'a pas été trouvée");
+			return null;
+		}
+		if(!IPlugin.class.isAssignableFrom(c))
+		{
+			System.out.println("[ERROR] Ce plugin n'est pas valide: La classe n'implémente" +
+					" pas l'interface \""+IPlugin.class.getName()+"\"");
 			return null;
 		}
 
+        return this.getPluginInstance(descriptor.getName(), (Class<IPlugin>)c,  active);
+	}
+
+	/* (non-Javadoc)
+	 * @see main.ICore#getPluginInstance(java.lang.String, java.lang.Class, boolean)
+	 */
+	@Override
+	public Object getPluginInstance(String pluginName, Class<IPlugin> classe, boolean active)
+	{
+		IPluginDescriptor descriptor=this.getPluginDescriptor(pluginName);
 		@SuppressWarnings("rawtypes")
 		Constructor constructor=null;
 		if(active)
@@ -153,12 +194,12 @@ public class Core implements ICore
 			Class<?>[] args=new Class<?>[]{ICore.class};
 			try
 			{
-				constructor=c.getConstructor(args);
+				constructor=classe.getConstructor(args);
 			}
 			catch (NoSuchMethodException nsme)
 			{
 				System.out.println("[ERROR] Le constructeur du plugin \""+
-							descriptor.getName()+"\" n'a pas pu Ã©tre trouvÃ©");
+							descriptor.getName()+"\" n'a pas pu étre trouvé");
 				/* NOTE: Ces trois lignes essayent de charger le plugin avec
 				 * le parametre de chargement actif inverse de celui qu'il
 				 * possede actuellement. Ce qui permet de le charge quand
@@ -166,27 +207,21 @@ public class Core implements ICore
 				 */
 				if(descriptor.isActive()==active)
 				{
-					return this.loadPlugin(descriptor, !active);
+					return this.getPluginInstance(pluginName, classe, !active);
 				}
 				return null;
 			}
 			catch (SecurityException se)
 			{
 				System.out.println("[ERROR] Le constructeur du plugin \""+
-						descriptor.getName()+"\" n'a pas pu Ãªtre invoquÃ©"+
+						descriptor.getName()+"\" n'a pas pu être invoqué"+
 						"\n"+se.getMessage());
 				if(descriptor.isActive()==active)
 				{
-					return this.loadPlugin(descriptor, !active);
+					return this.getPluginInstance(pluginName, classe, !active);
 				}
 				return null;
 			}
-		}
-		if(!IPlugin.class.isAssignableFrom(c))
-		{
-			System.out.println("[ERROR] Ce plugin n'est pas valide: La classe n'implÃ©mente" +
-					" pas l'interface \""+IPlugin.class.getName()+"\"");
-			return null;
 		}
 	    try
 		{
@@ -197,15 +232,16 @@ public class Core implements ICore
 			}
 			else
 			{
-				instance=c.newInstance();
+				instance=classe.newInstance();
 			}
 			if(instance!=null)
 			{
-				descriptor.setPluginInstance(instance);	
+				descriptor.setPluginInstance(instance);
+				return instance;
 			}
 			else
 			{
-				System.out.println("[ERROR] L'instance du plugin n'a pas pu Ãªtre crÃ©e");
+				System.out.println("[ERROR] L'instance du plugin n'a pas pu être crée");
 				return null;
 			}
 		}
@@ -216,7 +252,7 @@ public class Core implements ICore
 					"\n"+ie.getMessage());
 			if(descriptor.isActive()==active)
 			{
-				return this.loadPlugin(descriptor, !active);
+				return this.getPluginInstance(pluginName, classe, !active);
 			}
 			return null;
 		}
@@ -227,7 +263,7 @@ public class Core implements ICore
 					"\n"+iae.getMessage());
 			if(descriptor.isActive()==active)
 			{
-				return this.loadPlugin(descriptor, !active);
+				return this.getPluginInstance(pluginName, classe, !active);
 			}
 			return null;
 		}
@@ -238,7 +274,7 @@ public class Core implements ICore
 					"\n"+iae.getMessage());
 			if(descriptor.isActive()==active)
 			{
-				return this.loadPlugin(descriptor, !active);
+				return this.getPluginInstance(pluginName, classe, !active);
 			}
 			return null;
 		}
@@ -250,11 +286,10 @@ public class Core implements ICore
 			ite.printStackTrace();
 			if(descriptor.isActive()==active)
 			{
-				return this.loadPlugin(descriptor, !active);
+				return this.getPluginInstance(pluginName, classe, !active);
 			}
 			return null;
 		}
-        return descriptor.getPluginInstance();
 	}
 
 	/* (non-Javadoc)
@@ -265,6 +300,7 @@ public class Core implements ICore
 	{
     	Properties p=new Properties();
         System.out.println("[LOG] Chargement des configurations...");
+        this.screen.setLabel("Chargement des configurations...");
 		try
 	    {
 			p.load(new FileReader(this.fileName));
@@ -288,7 +324,8 @@ public class Core implements ICore
 			System.out.println("[ERROR] Le fichier \""+this.fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
 			return false;
 		}
-		System.out.println("[LOG] Plugins prÃ©sents dans: \""+path+"\"");
+		int nbPlugins=(p.size()-1);
+		System.out.println("[LOG] "+nbPlugins+" plugins présents dans: \""+path+"\"");
 		System.out.println("\tClasses:\t\tPath:");
 		System.out.println("\t---------------------------------");
 		for(Object k:p.keySet())
@@ -297,6 +334,15 @@ public class Core implements ICore
 			{
 				String pluginName=(String)k;
 				String pluginPath=(String)p.getProperty((String) k);
+				this.screen.setLabel("Opening plugin "+pluginName+" from: "+pluginPath);
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
 				
 				IPluginDescriptor descriptor=this.getPluginConfig(pluginName, pluginPath);
 				if(descriptor!=null)
@@ -305,6 +351,7 @@ public class Core implements ICore
 				}
 			}
 		}
+		splashScreenDestruct();
 		return true;
 	}
 
@@ -540,7 +587,7 @@ public class Core implements ICore
 		if(!found)
 		{
 			System.out.println("[ERROR] La configuration du plugin \""+plugin.getName()+
-					"\" n'a pas Ã©tÃ© trouvÃ©e");
+					"\" n'a pas été trouvée");
 			return false;
 		}
 		try
@@ -580,7 +627,7 @@ public class Core implements ICore
 	}
 
 	/**
-	 * DÃ©finit le fichier de configuration de la plateforme
+	 * Définit le fichier de configuration de la plateforme
 	 * @param fileName : {@link String}, Le nom du fichier de configuration
 	 */
 //	private void setFileName(String fileName)
@@ -601,21 +648,32 @@ public class Core implements ICore
 	 */
 	public static void main(String[] args)
 	{
+		try
+		{
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
 		System.out.println("[LOG] Chargement du coeur...");
 		Core core=new Core();
+		core.splashScreenInit();
+		core.screen.setLabel("Chargement du coeur");
 		core.setFileName("config.ini");
 		if(core.loadConfigs())
 		{
-			System.out.println("[LOG] Configurations chargÃ©es");			
+			System.out.println("[LOG] Configurations chargées");			
 		}
-		System.out.println("[LOG] Chargement des plugins par dÃ©faut...");
+		System.out.println("[LOG] Chargement des plugins par défaut...");
 		for(IPluginDescriptor plugin:core.getPlugins())
 		{
 			if(plugin.isDefault())
 			{
 				if(core.loadPlugin(plugin,plugin.isActive())!=null)
 				{
-					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" a Ã©tÃ© chargÃ©");
+					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" a été chargé");
 			        
 			        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
 			         * son descripteur et on dit qu'il a ete charge
@@ -624,11 +682,11 @@ public class Core implements ICore
 				}
 				else
 				{
-					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" n'a pas pu Ãªtre chargÃ©");
+					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" n'a pas pu être chargé");
 				}
 			}
 		}
-		System.out.println("[LOG] Fin d'exÃ©cution");
+		System.out.println("[LOG] Fin d'exécution");
         
 	}
 }
