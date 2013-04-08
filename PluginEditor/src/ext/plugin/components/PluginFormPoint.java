@@ -22,7 +22,7 @@ public class PluginFormPoint extends IForm
 		this.foregroundColor=Color.decode("#000000");
 		this.isDraggable=false;
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-		this.setIcon(new ImageIcon("img/point_icon_24.png"));
+		this.setIcon(new ImageIcon("ressources/img/point_icon_24.png"));
 	}
 
 	@Override

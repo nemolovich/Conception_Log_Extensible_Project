@@ -11,6 +11,7 @@ import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 import ext.plugin.view.PluginMainPanel;
 import ext.plugin.view.panel.colors.ColorPanel;
@@ -38,15 +39,21 @@ public class OptionPanel extends JPanel implements MouseListener
 	public OptionPanel()
 	{
 		super();
-		this.setLayout(new FlowLayout());
+		this.setLayout(new BorderLayout());
 		this.setBackground(Color.decode("#F0F0F0"));
 		this.configurationPanel.setLayout(new FlowLayout());
 		this.configurationPanel.add(this.sizeInput);
 		this.configurationPanel.setBorder(BorderFactory.createTitledBorder("Configurations"));
 		this.itemPanel.setLayout(new FlowLayout());
 		this.itemPanel.setBorder(BorderFactory.createTitledBorder("Objets"));
-		this.add(this.configurationPanel,BorderLayout.NORTH);
-		this.add(this.itemPanel,BorderLayout.CENTER);
+		JSplitPane split=new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
+		split.setTopComponent(this.configurationPanel);
+		split.setBottomComponent(this.itemPanel);
+		split.setOneTouchExpandable(true);
+		split.setEnabled(true);
+		split.setAutoscrolls(true);
+		split.setOneTouchExpandable(true);
+		this.add(split);
 		this.sizeInput.addMouseListener(this);
 		this.addMouseListener(this);
 	}
@@ -62,8 +69,6 @@ public class OptionPanel extends JPanel implements MouseListener
 	
 	public void updateDrawType(int drawType)
 	{
-//		EditPanel tmp=this.editPanel;
-//		this.editPanel=null;
 		try
 		{
 			((EditFormPanel)this.editPanel).setDrawType(drawType);
@@ -83,30 +88,28 @@ public class OptionPanel extends JPanel implements MouseListener
 				((PluginMainPanel)component).dispose();
 			}
 		}
-//		this.editPanel=tmp;
 	}
 	
 	public void setPanelSize(int optionWidth, int frameHeight, int heightItems)
 	{
-		System.out.println("set at: "+optionWidth);
 		this.setPreferredSize(new Dimension(optionWidth,frameHeight-50));
 		this.setMinimumSize(new Dimension(250,frameHeight-50));
-		this.sizeInput.setMinimumSize(new Dimension(25, 25));
-		this.sizeInput.setPreferredSize(new Dimension(optionWidth-10, 25));
-		int confHeight=50;
+		this.sizeInput.setMinimumSize(new Dimension(200, 35));
+		this.sizeInput.setPreferredSize(new Dimension(optionWidth-15, 25));
+		int confHeight=60;
 		if(this.colorPanel!=null)
 		{
-			this.colorPanel.setPreferredSize(new Dimension(optionWidth-10, 40));
+			this.colorPanel.setPreferredSize(new Dimension(optionWidth-15, 40));
 			this.colorPanel.center(optionWidth-10);
-			confHeight+=45;
+			confHeight+=50;
 		}
 		if(this.drawTypePanel!=null)
 		{
-			this.drawTypePanel.setPreferredSize(new Dimension(optionWidth-10, 40));
-			confHeight+=45;
+			this.drawTypePanel.setPreferredSize(new Dimension(optionWidth-15, 40));
+			confHeight+=50;
 		}
 		this.configurationPanel.setPreferredSize(new Dimension(optionWidth,confHeight));
-		this.itemPanel.setPreferredSize(new Dimension(optionWidth,heightItems));
+//		this.itemPanel.setPreferredSize(new Dimension(optionWidth,heightItems));
 	}
 	
 	public Color getBackgroundColor()

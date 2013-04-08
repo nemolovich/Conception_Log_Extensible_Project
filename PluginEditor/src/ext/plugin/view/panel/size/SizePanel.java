@@ -42,7 +42,7 @@ public class SizePanel extends JPanel implements KeyListener, MouseMotionListene
 		
 		JLabel label=new JLabel("Taille: ");
 		label.setFont(new Font(label.getFont().getName(),0,12));
-		label.setPreferredSize(new Dimension(40,15));
+		label.setPreferredSize(new Dimension(45,15));
 		
 		this.slider.setValue(optionPanel.getCurrentSize());
 		

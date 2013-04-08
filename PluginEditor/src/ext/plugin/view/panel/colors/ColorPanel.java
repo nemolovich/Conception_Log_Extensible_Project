@@ -64,7 +64,7 @@ public class ColorPanel extends JPanel implements MouseListener, KeyListener
 		Image img = null;
 		try
 		{
-			img = ImageIO.read(new File("img/arrow_16.png"));
+			img = ImageIO.read(new File("ressources/img/arrow_16.png"));
 		}
 		catch (IOException ioe)
 		{
@@ -100,8 +100,8 @@ public class ColorPanel extends JPanel implements MouseListener, KeyListener
 		this.foregroundPanel.setBounds(2+(width-160)/2, 10, 25, 15);
 		this.backgroundPanel.setBounds(18+(width-160)/2, 20, 25, 15);
 		this.selectedColorLabel.setBounds(50+(width-160)/2, 2, 150, 15);
-		this.inputColor.setBounds(50+(width-160)/2, 20, 75, 19);
-		this.switchButton.setBounds(130+(width-160)/2, 18, 20, 20);
+		this.inputColor.setBounds(50+(width-160)/2, 18, 75, 23);
+		this.switchButton.setBounds(130+(width-160)/2, 18, 22, 22);
 		this.setSize(width, 25);
 	}
 

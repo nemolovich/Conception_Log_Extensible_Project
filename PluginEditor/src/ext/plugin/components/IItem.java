@@ -2,8 +2,9 @@ package ext.plugin.components;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import main.plugin.IPlugin;
 
-public interface IItem
+public interface IItem extends IPlugin
 {
 	public abstract String getItemName();
 	public abstract void setItemName(String itemName);

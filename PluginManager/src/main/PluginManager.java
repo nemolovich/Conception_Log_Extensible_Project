@@ -156,7 +156,7 @@ public class PluginManager implements IPlugin
 	 */
 	private boolean createMainClass(String path, String className, boolean active)
 	{
-		System.out.println("[INFO] CrÃ©ation de la classe \""+className+".java\"...");
+		System.out.println("[INFO] Création de la classe \""+className+".java\"...");
 		FileInputStream fi=null;
 		FileOutputStream fo=null;
 		File tempFile=new File(this.pluginManagerPath+"temp"+File.separator+"example.java");
@@ -196,17 +196,17 @@ public class PluginManager implements IPlugin
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Impossible de crÃ©er la classe \""+className+"\"\n"
+			System.out.println("[ERROR] Impossible de créer la classe \""+className+"\"\n"
 						+fnfe.getMessage());
 			return false;
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Impossible de crÃ©er la classe \""+className+"\"\n"
+			System.out.println("[ERROR] Impossible de créer la classe \""+className+"\"\n"
 					+ioe.getMessage());
 			return false;
 		}
-		System.out.println("[INFO] Classe \""+className+".java\" crÃ©Ã©e");
+		System.out.println("[INFO] Classe \""+className+".java\" créée");
 		
 		return true;
 	}
@@ -220,12 +220,12 @@ public class PluginManager implements IPlugin
 	{
 		if(new File(folder).mkdir())
 		{
-			System.out.println("[INFO] CrÃ©ation du dossier \""+folder+"\"...");
+			System.out.println("[INFO] Création du dossier \""+folder+"\"...");
 			return true;
 		}
 		else
 		{
-			System.out.println("[INFO] Le dossier \""+folder+"\" existe dÃ©jÃ ");
+			System.out.println("[INFO] Le dossier \""+folder+"\" existe déjÃ ");
 			return false;
 //			return true;
 		}
@@ -262,7 +262,7 @@ public class PluginManager implements IPlugin
 			if(path.isDirectory())
 			{
 				Files.deleteIfExists(path);
-				System.out.println("[LOG] Dossier \""+path.getName()+"\" supprimÃ©");
+				System.out.println("[LOG] Dossier \""+path.getName()+"\" supprimé");
 				return true;
 			}
 		}
@@ -313,17 +313,17 @@ public class PluginManager implements IPlugin
 				System.out.println("[INFO] Suppression du dossier \""+pluginDir+"\" et de son contenu...");
 				if(this.deleteDirectory(pluginDir))
 				{
-					System.out.println("[INFO] Dossier \""+pluginDir+"\" supprimÃ©");	
+					System.out.println("[INFO] Dossier \""+pluginDir+"\" supprimé");	
 				}
 				else
 				{
-					System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu Ãªtre supprimÃ©");
+					System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu être supprimé");
 					return false;
 				}
 			}
 			catch (IOException ioe)
 			{
-				System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu Ãªtre supprimÃ©\n"+
+				System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu être supprimé\n"+
 							ioe.getMessage());
 				return false;
 			}
@@ -459,7 +459,7 @@ public class PluginManager implements IPlugin
 						
 						if(!interfaceFile.isFile())
 						{
-							System.out.println("[ERROR] L'interface \""+intfce+".class\" n'a pas pu Ãªtre trouvÃ©e");
+							System.out.println("[ERROR] L'interface \""+intfce+".class\" n'a pas pu être trouvée");
 							try
 							{
 								zip.close();
@@ -571,7 +571,7 @@ public class PluginManager implements IPlugin
 							}
 							catch (IOException ioe)
 							{
-								System.out.println("[ERROR] Impossible d'Ã©crire dans le fichier \""+
+								System.out.println("[ERROR] Impossible d'écrire dans le fichier \""+
 										intfce.replaceAll("\\.", File.separator)+".class\""+ioe.getMessage());
 								return false;
 							}
@@ -613,7 +613,7 @@ public class PluginManager implements IPlugin
 								"libs"+File.separator, lib))
 						{
 							System.out.println("[ERROR] La librairie \""+lib+"\" n'a pas " +
-									"pÃ» Ãªtre exportÃ©e vers le plugin \""+pluginName+"\"");
+									"pû être exportée vers le plugin \""+pluginName+"\"");
 							return false;
 						}
 					}
@@ -769,7 +769,7 @@ public class PluginManager implements IPlugin
 				}
 				catch (FileNotFoundException fnfe)
 				{
-					System.out.println("[ERROR] Le fichier \""+pluginFileConfig+"\" n'a pas Ã©tÃ© trouvÃ©");
+					System.out.println("[ERROR] Le fichier \""+pluginFileConfig+"\" n'a pas été trouvé");
 				}
 				catch (IOException ioe)
 				{
@@ -824,7 +824,7 @@ public class PluginManager implements IPlugin
 		File binaries=new File(path+"bin"+File.separator);
 		if(!binaries.exists()||binaries.listFiles().length<1)
 		{
-			error="Le projet ne semble pas avoir Ã©tÃ© compilÃ©";
+			error="Le projet ne semble pas avoir été compilé";
 			System.out.println("[ERROR] "+error);
 			return error;
 		}
@@ -836,13 +836,13 @@ public class PluginManager implements IPlugin
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			error="Impossible d'accÃ©der au fichier de configuration du plugin";
+			error="Impossible d'accéder au fichier de configuration du plugin";
 			System.out.println("[ERROR] "+error);
 			return error;
 		}
 		catch (IOException ioe)
 		{
-			error="Erreur lors de la rÃ©cupÃ©ration des configuration du plugin:\n"
+			error="Erreur lors de la récupération des configuration du plugin:\n"
 					+ioe.getMessage();
 			System.out.println("[ERROR] "+error);
 			return error;
@@ -888,7 +888,7 @@ public class PluginManager implements IPlugin
 		catch (FileNotFoundException fnfe)
 		{
 			error="Le fichier de configuration de la plateforme n'a" +
-			" pas Ã©tÃ© trouvÃ©";
+			" pas été trouvé";
 			System.out.println("[ERROR] "+error);
 			return error;
 		}
@@ -962,7 +962,7 @@ public class PluginManager implements IPlugin
 				if(!this.deleteDirectory(pluginPath))
 				{
 					System.out.println("[ERROR] Le dossier du plugin \""+plugin.getName()+
-							"\" n'a pas Ã©tÃ© supprimÃ©");
+							"\" n'a pas été supprimé");
 					return false;
 				}
 			}
@@ -974,7 +974,7 @@ public class PluginManager implements IPlugin
 			}
 			return this.core.removePlugin(plugin);
 		}
-		System.out.println("[ERROR] Le plugin \""+plugin.getName()+"\" n'a pas Ã©tÃ© trouvÃ©");
+		System.out.println("[ERROR] Le plugin \""+plugin.getName()+"\" n'a pas été trouvé");
 		return false;
 	}
 	

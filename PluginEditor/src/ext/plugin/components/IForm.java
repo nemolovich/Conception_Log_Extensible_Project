@@ -12,9 +12,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import main.plugin.IPlugin;
-
-public abstract class IForm implements IItem, IPlugin
+public abstract class IForm implements IItem
 {
 	public static final int NORMAL_DRAW = 0;
 	public static final int FULL_FORE_DRAW = 1;
@@ -44,7 +42,7 @@ public abstract class IForm implements IItem, IPlugin
 		Graphics2D g2d=(Graphics2D) cursorImg.createGraphics();
 		toolkit.getBestCursorSize(16, 20);
 		g2d.setPaint(IForm.CURSOR_COLOR);
-		Image img=new ImageIcon("img/cursor.png").getImage();
+		Image img=new ImageIcon("ressources/img/cursor.png").getImage();
 		g2d.drawImage(img,0,0,null);
 		return cursorImg;
 	}
@@ -242,7 +240,7 @@ public abstract class IForm implements IItem, IPlugin
 	public void setButton(JButton button)
 	{
 		this.button = button;
-		this.button.setToolTipText("Créer une forme "+this.formName);
+		this.button.setToolTipText("Cr�er une forme "+this.formName);
 	}
 
 	/**

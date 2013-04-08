@@ -131,27 +131,39 @@ public class PluginMainPanel extends JFrame implements ActionListener
 	{
 		this.optionPanel = optionPanel;
 		int nbItem=0;
+		
 		if(this.plugins!=null)
 		{
 			for(IPluginDescriptor plugin:this.plugins)
 			{
-				IItem item=(IItem)plugin.getPluginInstance();
-				JButton button= new JButton(item.getItemName());
-				button.setPreferredSize(new Dimension(this.frameWidth-(this.frameWidth-240), 25));
-				nbItem++;
-				if(item.getIcon()!=null)
+				try
 				{
-					button.setIcon(item.getIcon());
-					button.setText(null);
-					button.setPreferredSize(new Dimension(26, 26));
+					IItem item=(IItem)plugin.getPluginInstance();
+					System.out.println(item);
 				}
-				button.addActionListener(this);
-				item.setButton(button);
-				this.optionPanel.getItemPanel().add(button);
-				if(item.isDefaultItem())
+				catch(Exception e)
 				{
-					this.editPanel.setCurrentItem(item);
+					System.err.println("[ERROR] Impossible de convertir le plugin \""+plugin.getName()+
+							"\" en item compatible");
+					continue;
 				}
+//				IItem item=(IItem)plugin.getPluginInstance();
+//				JButton button= new JButton(item.getItemName());
+//				button.setPreferredSize(new Dimension(this.frameWidth-(this.frameWidth-240), 25));
+//				nbItem++;
+//				if(item.getIcon()!=null)
+//				{
+//					button.setIcon(item.getIcon());
+//					button.setText(null);
+//					button.setPreferredSize(new Dimension(26, 26));
+//				}
+//				button.addActionListener(this);
+//				item.setButton(button);
+//				this.optionPanel.getItemPanel().add(button);
+//				if(item.isDefaultItem())
+//				{
+//					this.editPanel.setCurrentItem(item);
+//				}
 			}
 			if(this.editPanel instanceof EditFormPanel)
 			{
@@ -177,6 +189,7 @@ public class PluginMainPanel extends JFrame implements ActionListener
 				}
 			}
 		}
+		
 		this.optionPanel.setOptions(this);
 		this.setSize(this.getSize());
 		if(this.editPanel instanceof EditFormPanel)

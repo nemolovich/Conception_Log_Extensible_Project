@@ -1,7 +1,7 @@
 import interfaces.IPlugin_Affichage;
-import main.plugin.IPlugin;
 import Affichage.PluginAfficheMajuscule;
 import Affichage.PluginAfficheMinuscule;
+import main.plugin.*;
 
 public class PluginAffichageMain implements IPlugin
 {

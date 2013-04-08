@@ -62,7 +62,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		this.frameWidth=width/2;
 		this.frameHeight=height/2;
 		this.setSize(this.frameWidth, this.frameHeight);
-		this.setMinimumSize(new Dimension(650,200));
+		this.setMinimumSize(new Dimension(650,280));
 		this.setTitle("Plugin Manager");
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);

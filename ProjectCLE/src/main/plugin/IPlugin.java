@@ -2,7 +2,6 @@ package main.plugin;
 
 public interface IPlugin
 {
-	
 	/**
 	 * @return the name
 	 */
