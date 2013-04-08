@@ -8,7 +8,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import main.plugin.IPlugin;
-import ext.plugin.components.IItem;
+import ext.plugin.components.interfaces.IItem;
 
 public abstract class EditPanel extends JPanel implements MouseListener, MouseMotionListener
 {

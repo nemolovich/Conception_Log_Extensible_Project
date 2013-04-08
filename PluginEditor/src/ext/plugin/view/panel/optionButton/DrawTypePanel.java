@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ext.plugin.components.IForm;
+import ext.plugin.components.interfaces.IForm;
 import ext.plugin.view.panel.OptionPanel;
 
 public class DrawTypePanel extends JPanel

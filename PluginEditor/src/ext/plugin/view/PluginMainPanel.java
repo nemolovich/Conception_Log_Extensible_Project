@@ -11,6 +11,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -19,8 +22,8 @@ import javax.swing.JSplitPane;
 
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
-import ext.plugin.components.IItem;
 import ext.plugin.components.PluginFormPoint;
+import ext.plugin.components.interfaces.IItem;
 import ext.plugin.controller.Controller;
 import ext.plugin.view.panel.EditFormPanel;
 import ext.plugin.view.panel.EditPanel;
@@ -138,13 +141,31 @@ public class PluginMainPanel extends JFrame implements ActionListener
 			{
 				try
 				{
+<<<<<<< HEAD
 					IItem item=(IItem)plugin.getPluginInstance();
 					System.out.println(item);
+=======
+					URL urls[]=new URL[2];
+					urls[0]=new URL("file:/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/"+plugin.getPath()+File.separator);
+					urls[1]=new URL("file:/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/PluginEditor/");
+					URLClassLoader ucl=new URLClassLoader(urls);
+					Class<?> c = Class.forName(plugin.getClassName(),false,ucl);
+					Object o=c.newInstance();
+					
+					IItem item=(IItem)o;
+					System.out.println(o.getClass().getName());
+//					System.out.println(item);
+>>>>>>> Update some PluginManager bugs
 				}
 				catch(Exception e)
 				{
 					System.err.println("[ERROR] Impossible de convertir le plugin \""+plugin.getName()+
+<<<<<<< HEAD
 							"\" en item compatible");
+=======
+							"\" en item compatible:\n"+e.getMessage());
+					e.printStackTrace();
+>>>>>>> Update some PluginManager bugs
 					continue;
 				}
 //				IItem item=(IItem)plugin.getPluginInstance();

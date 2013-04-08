@@ -12,12 +12,19 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Properties;
 
-import main.ICore;
+import javax.swing.ImageIcon;
+import javax.swing.UIManager;
+
+import main.log.ConsoleLogger;
+import main.log.FrameLogger;
+import main.log.Logger;
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
 import main.plugin.PluginDescriptor;
+import main.view.SplashScreen;
 
 public class Core implements ICore
 {
@@ -32,22 +39,139 @@ public class Core implements ICore
 	 */
 	private String path;
 	private String fileName;
+	private SplashScreen screen;
+	private ArrayList<Logger> logs=new ArrayList<Logger>();
+
+	/**
+	 * Constructeur
+	 */
+	public Core()
+	{
+		this.logs.add(new ConsoleLogger());
+		this.logs.add(new FrameLogger("la plateforme"));
+		try
+		{
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		this.setFileName("config.ini");
+		if(!this.loadCore())
+		{
+			return;
+		}
+		
+		this.logWrite("Chargement des plugins par défaut...");
+		this.screen.setLabel("Chargement des plugins par défaut...");
+		this.screen.setNbElement(this.getNbDefaultPlugins());
+		this.screen.setProgress(0);
+		int i=1;
+		for(IPluginDescriptor plugin:this.getPlugins())
+		{
+			if(plugin.isDefault())
+			{
+				this.screen.setLabel("Chargement du plugin "+plugin.getName());
+				this.screen.setStateMessage("Loading Plugin");
+				this.screen.setNbElement(this.getNbDefaultPlugins());
+				this.screen.setProgress(i);
+				try
+				{
+					Thread.sleep(500);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+				if(this.loadPlugin(plugin,plugin.isActive())!=null)
+				{
+			        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
+			         * son descripteur et on dit qu'il a ete charge
+			         */
+					plugin.setLoaded(true);
+				}
+				this.screen.setLabel("Chargement du plugin "+plugin.getName());
+				this.screen.setStateMessage("Loading Plugin");
+				this.screen.setNbElement(this.getNbDefaultPlugins());
+				this.screen.setProgress(i++);
+			}
+		}
+		this.screen.setLabel("Plateforme chargée");
+		this.logWrite("Coeur chargé");
+		this.splashScreenDestruct();
+		this.logDisplay();
+	}
+	
+	private boolean loadCore()
+	{
+		this.logWrite("Chargement du coeur...");
+		this.splashScreenInit();
+		this.screen.setLabel("Chargement de la plateforme");
+		try
+		{
+			Thread.sleep(100);
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		if(!this.loadConfigs())
+		{
+			return false;
+		}
+		return true;
+	}
 	
 	/**
-	 * Retourne l'URL du chemin vers une librairie donnÃ©e
+	 * Initialise le SplashScreen
+	 */
+	private void splashScreenInit()
+	{
+		ImageIcon myImage = new ImageIcon("img/SplashScreen.jpg");
+	    this.screen = new SplashScreen(myImage);
+	    this.screen.setLocationRelativeTo(null);
+	    this.screen.setProgressMax(100);
+	    this.screen.setNbElement(1);
+	    this.screen.setProgress(0);
+	    this.screen.setScreenVisible(true);
+	}
+	
+	/**
+	 * Destroy the splashscreen
+	 */
+	private void splashScreenDestruct()
+	{
+		this.screen.setScreenVisible(false);
+		this.screen.dispose();
+	}
+	
+	/**
+	 * Retourne l'URL du chemin vers une librairie donnée
 	 * @param librarieName : {@link String}, The library name
 	 * @return {@link URL}, The URL to library path
 	 */
 	private URL getLibraryURL(String librarieName)
 	{
-		System.out.println("[LOG] Chargement de la librairie \""+librarieName+"\"");
+		this.logWrite("Chargement de la librairie \""+librarieName+"\"");
+		this.screen.setLabel("Loading library "+librarieName);
+		this.screen.setStateMessage("Loading Library");
+		try
+		{
+			Thread.sleep(500);
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
 		try
 		{
 			return new URL("file:"+this.path+"libs/"+File.separator+librarieName);
 		}
 		catch (MalformedURLException mURLe)
 		{
-			System.out.println("[ERROR] Le chemin dÃ©fini vers \""+librarieName+"\" est incorrect"+
+			this.logError("Le chemin défini vers \""+librarieName+"\" est incorrect"+
 					"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -60,14 +184,14 @@ public class Core implements ICore
 	@Override
 	public Object loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
-		System.out.println("[LOG] Chargement ("+(active?"actif":"passif")+") du plugin \""+
+		this.logWrite("Chargement ("+(active?"actif":"passif")+") du plugin \""+
 						descriptor.getName()+"\"...");
 		Class<?> c;
 		ArrayList<URL> urls=new ArrayList<URL>();
 		if(descriptor.getInterfaces().size()>0)
 		{
 			/*
-			 * Pour toutes les interfaces dont dÃ©pend le plugin
+			 * Pour toutes les interfaces dont dépend le plugin
 			 */
 			for(String intfce:descriptor.getInterfaces())
 			{
@@ -85,7 +209,7 @@ public class Core implements ICore
 						for(String depd:plugin.getDependencies())
 						{
 							/*
-							 * Si l'interface est celle dÃ©sirÃ©e, on ajoute son path dans le classloader
+							 * Si l'interface est celle désirée, on ajoute son path dans le classloader
 							 */
 							if(depd.equals(intfce))
 							{
@@ -97,8 +221,8 @@ public class Core implements ICore
 								}
 								catch (MalformedURLException mURLe)
 								{
-									System.out.println("[ERROR] L'URL vers le plugin \""+plugin.getName()
-											+"\" est mal dÃ©finie:\n"+mURLe.getMessage());
+									this.logError("L'URL vers le plugin \""+plugin.getName()
+											+"\" est mal définie:\n"+mURLe.getMessage());
 									break;
 								}
 							}
@@ -117,9 +241,13 @@ public class Core implements ICore
 			if(descriptor.getLibraries()!=null&&descriptor.getLibraries().size()>0)
 			{
 				/* Si le plugin depend de librairies on les ajoute au classloader
-				 * (Ces libraries doivent Ãªtre placÃ©es dans le dossier "libs" du
+				 * (Ces libraries doivent être placées dans le dossier "libs" du
 				 * path du coeur)
 				 */
+				this.screen.setNbElement(descriptor.getLibraries().size());
+				this.screen.setProgress(0);
+				this.screen.setStateMessage("Loading Plugin");
+				int i=1;
 				for(String library:descriptor.getLibraries())
 				{
 					URL lib=this.getLibraryURL(library);
@@ -127,12 +255,13 @@ public class Core implements ICore
 					{
 						urls.add(lib);
 					}
+					this.screen.setProgress(i++);
 				}
 			}
 		}
 		catch (MalformedURLException mURLe)
 		{
-			System.out.println("[ERROR] Le chemin dÃ©fini vers \""+descriptor.getName()+"\" est incorrect"+
+			this.logError("Le chemin défini vers \""+descriptor.getName()+"\" est incorrect"+
 						"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -143,13 +272,13 @@ public class Core implements ICore
 		} 
         catch (ClassNotFoundException cnfe)
         {
-			System.out.println("[ERROR] La classe \""+descriptor.getClassName()+"\" pour le plugin \""+
-						descriptor.getName()+"\" n'a pas Ã©tÃ© trouvÃ©e");
+        	this.logError("La classe \""+descriptor.getClassName()+"\" pour le plugin \""+
+						descriptor.getName()+"\" n'a pas été trouvée");
 			return null;
 		}
 		if(!IPlugin.class.isAssignableFrom(c))
 		{
-			System.out.println("[ERROR] Ce plugin n'est pas valide: La classe n'implÃ©mente" +
+			this.logError("Ce plugin n'est pas valide: La classe n'implémente" +
 					" pas l'interface \""+IPlugin.class.getName()+"\"");
 			return null;
 		}
@@ -179,8 +308,8 @@ public class Core implements ICore
 			}
 			catch (NoSuchMethodException nsme)
 			{
-				System.out.println("[ERROR] Le constructeur du plugin \""+
-							descriptor.getName()+"\" n'a pas pu Ã©tre trouvÃ©");
+				this.logError("Le constructeur du plugin \""+
+							descriptor.getName()+"\" n'a pas pu être trouvé");
 				/* NOTE: Ces trois lignes essayent de charger le plugin avec
 				 * le parametre de chargement actif inverse de celui qu'il
 				 * possede actuellement. Ce qui permet de le charge quand
@@ -194,8 +323,8 @@ public class Core implements ICore
 			}
 			catch (SecurityException se)
 			{
-				System.out.println("[ERROR] Le constructeur du plugin \""+
-						descriptor.getName()+"\" n'a pas pu Ãªtre invoquÃ©"+
+				this.logError("Le constructeur du plugin \""+
+						descriptor.getName()+"\" n'a pas pu être invoqué"+
 						"\n"+se.getMessage());
 				if(descriptor.isActive()==active)
 				{
@@ -217,18 +346,19 @@ public class Core implements ICore
 			}
 			if(instance!=null)
 			{
+				this.logWrite("Le plugin \""+descriptor.getName()+"\" a été chargé");
 				descriptor.setPluginInstance(instance);
 				return instance;
 			}
 			else
 			{
-				System.out.println("[ERROR] L'instance du plugin n'a pas pu Ãªtre crÃ©e");
+				this.logError("Le plugin \""+descriptor.getName()+"\" n'a pas pu être chargé");
 				return null;
 			}
 		}
 		catch (InstantiationException ie)
 		{
-			System.out.println("[ERROR] Impossible d'instancier le plugin \""+
+			this.logError("Impossible d'instancier le plugin \""+
 					descriptor.getName()+"\""+
 					"\n"+ie.getMessage());
 			if(descriptor.isActive()==active)
@@ -239,7 +369,7 @@ public class Core implements ICore
 		}
 		catch (IllegalAccessException iae)
 		{
-			System.out.println("[ERROR] Impossible d'instancier le plugin \""+
+			this.logError("Impossible d'instancier le plugin \""+
 					descriptor.getName()+"\" (Illegal Access)"+
 					"\n"+iae.getMessage());
 			if(descriptor.isActive()==active)
@@ -250,7 +380,7 @@ public class Core implements ICore
 		}
 	    catch (IllegalArgumentException iae)
 		{
-			System.out.println("[ERROR] Impossible d'instancier le plugin \""+
+	    	this.logError("Impossible d'instancier le plugin \""+
 					descriptor.getName()+"\" (Illegal Argument)"+
 					"\n"+iae.getMessage());
 			if(descriptor.isActive()==active)
@@ -261,7 +391,7 @@ public class Core implements ICore
 		}
 	    catch (InvocationTargetException ite)
 		{
-			System.out.println("[ERROR] Impossible d'instancier le plugin \""+
+	    	this.logError("Impossible d'instancier le plugin \""+
 					descriptor.getName()+"\" (Invocation Target)"+
 					"\n"+ite.getMessage());
 			ite.printStackTrace();
@@ -277,23 +407,28 @@ public class Core implements ICore
 	 * @see main.ICore#loadConfigs(java.lang.String)
 	 */
 	@Override
-	public boolean loadConfigs()
+	synchronized public boolean loadConfigs()
 	{
+		if(this.fileName==null)
+		{
+			this.logError("Aucun fichier de configuration définit");
+		}
     	Properties p=new Properties();
-        System.out.println("[LOG] Chargement des configurations...");
+    	this.logWrite("Chargement des configurations...");
+        this.screen.setLabel("Chargement des configurations...");
 		try
 	    {
 			p.load(new FileReader(this.fileName));
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Impossible de charger le ficher \""+this.fileName+"\"\n"+
+			this.logError("Impossible de charger le ficher \""+this.fileName+"\"\n"+
 						fnfe.getMessage());
 			return false;
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Erreur lors de l'ouverture du ficher \""+this.fileName+"\"\n"
+			this.logError("Erreur lors de l'ouverture du ficher \""+this.fileName+"\"\n"
 						+ioe.getMessage());
 			return false;
 		}
@@ -301,19 +436,32 @@ public class Core implements ICore
 		this.path=this.path==null?p.getProperty("PluginsPath"):p.getProperty("pluginsPath");
 		if(this.path==null)
 		{
-			System.out.println("[ERROR] Le fichier \""+this.fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
+			this.logError("Le fichier \""+this.fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
 			return false;
 		}
-		System.out.println("[LOG] Plugins prÃ©sents dans: \""+path+"\"");
-		System.out.println("\tClasses:\t\tPath:");
-		System.out.println("\t---------------------------------");
+		int nbPlugins=(p.size()-1);
+		this.screen.setNbElement(nbPlugins);
+		int i=1;
+		this.logWrite(nbPlugins+" plugins présents dans:\n\""+path+"\"");
+		this.logPrint("\tClasses:\t\tPath:\n");
+		this.logPrint("\t---------------------------------\n");
 		for(Object k:p.keySet())
 		{
 			if(!((String)k).equalsIgnoreCase("pluginsPath"))
 			{
 				String pluginName=(String)k;
 				String pluginPath=(String)p.getProperty((String) k);
-				
+				this.screen.setLabel("Opening plugin "+pluginName+" from: "+pluginPath);
+				try
+				{
+					Thread.sleep(500);
+				}
+				catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+				this.screen.setProgress(i++);
+				this.screen.setStateMessage("Opening Plugin");
 				IPluginDescriptor descriptor=this.getPluginConfig(pluginName, pluginPath);
 				if(descriptor!=null)
 				{
@@ -321,7 +469,47 @@ public class Core implements ICore
 				}
 			}
 		}
+		this.logWrite("Configurations chargées");
 		return true;
+	}
+	
+	/**
+	 * Return the number of default plugins
+	 * @return {@link Integer int}, Number of default plugins
+	 */
+	synchronized private int getNbDefaultPlugins()
+	{
+		if(this.plugins.isEmpty())
+		{
+			return 0;
+		}
+		int res=0;
+		for(IPluginDescriptor desc:this.plugins)
+		{
+			if(desc.isDefault())
+			{
+				res++;
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Return the string property from a config file
+	 * @param prop : {@link Properties}, The properties
+	 * @param propertyName : {@link String}, The property name
+	 * @param pluginFileConfig : {@link String}, The plugin file config
+	 * @return {@link String}, The string property
+	 */
+	private String getStringProperty(Properties prop, String propertyName, String pluginFileConfig)
+	{
+		String property=prop.getProperty(propertyName);
+		if(property==null)
+		{
+			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+					propertyName+"\"");
+		}
+		return property;
 	}
 
 	/**
@@ -337,7 +525,8 @@ public class Core implements ICore
 		String property=prop.getProperty(propertyName);
 		if(property==null)
 		{
-			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"lazy\"");
+			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+					propertyName+"\"");
 			return null;
 		}
 		return (property.equalsIgnoreCase("true"));
@@ -357,7 +546,8 @@ public class Core implements ICore
 		ArrayList<String> array=new ArrayList<String>();
 		if(property==null)
 		{
-			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"interfaces\"");
+			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+						propertyName+"\"");
 			return null;
 		}
 		if(property.length()>0)
@@ -372,7 +562,7 @@ public class Core implements ICore
 	 */
 	public IPluginDescriptor getPluginConfig(String pluginName, String pluginPath)
 	{
-		System.out.printf("\t%-22s\t%s\n",pluginName,pluginPath);
+		this.logPrint(String.format("\t%-22s\t%s\n",pluginName,pluginPath));
 		String pluginFileConfig=path+pluginPath+File.separator+"config.ini";
 		Properties prop=new Properties();
 		try
@@ -381,13 +571,13 @@ public class Core implements ICore
 		}
 		catch (FileNotFoundException e)
 		{
-			System.out.println("[ERROR]\t - Impossible de charger le ficher \""+pluginFileConfig+"\"\n"
+			this.logError("\t - Impossible de charger le ficher \""+pluginFileConfig+"\"\n"
 								+e.getMessage());
 			return null;
 		}
 		catch (IOException e)
 		{
-			System.out.println("[ERROR]\t - Erreur lors de l'ouverture du ficher \""+pluginFileConfig+"\"\n"
+			this.logError("\t - Erreur lors de l'ouverture du ficher \""+pluginFileConfig+"\"\n"
 								+e.getMessage());
 			return null;
 		}
@@ -426,37 +616,20 @@ public class Core implements ICore
 		{
 			return null;
 		}
-		System.out.printf("\t  |-> %-10s %s\n\t  |-> %-10s %s\n\t  '-> %-10s %s\n",
+		this.logPrint(String.format("\t  |-> %-10s %s\n\t  |-> %-10s %s\n\t  '-> %-10s %s\n",
 				"Default:",pluginIsDefault?"Oui":"Non",
 				"Active:",pluginIsActive?"Oui":"Non",
-				"Lazy:",pluginIsLazy?"Oui":"Non");
+				"Lazy:",pluginIsLazy?"Oui":"Non"));
 		PluginDescriptor descriptor=new PluginDescriptor(pluginName,pluginPath,pluginIsDefault,
 				pluginIsActive,pluginIsLazy,className,pluginInterfaces,pluginLibraries,pluginDependencies);
 		return descriptor;
-	}
-
-	/**
-	 * Return the string property from a config file
-	 * @param prop : {@link Properties}, The properties
-	 * @param propertyName : {@link String}, The property name
-	 * @param pluginFileConfig : {@link String}, The plugin file config
-	 * @return {@link String}, The string property
-	 */
-	private String getStringProperty(Properties prop, String propertyName, String pluginFileConfig)
-	{
-		String property=prop.getProperty(propertyName);
-		if(property==null)
-		{
-			System.out.println("[ERROR]\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \"className\"");
-		}
-		return property;
 	}
 
 	/* (non-Javadoc)
 	 * @see main.ICore#getPuginsByInterface(java.lang.String)
 	 */
 	@Override
-	public ArrayList<IPluginDescriptor> getPuginsByInterface(String iplugin)
+	synchronized public ArrayList<IPluginDescriptor> getPuginsByInterface(String iplugin)
 	{
 		ArrayList<IPluginDescriptor> pluglist=new ArrayList<IPluginDescriptor>();
 		for(IPluginDescriptor plugin:this.plugins)
@@ -474,7 +647,7 @@ public class Core implements ICore
 	 * @see main.ICore#getPlugin(java.lang.String)
 	 */
 	@Override
-	public Object getPlugin(String pluginName)
+	synchronized public Object getPlugin(String pluginName)
 	{
 		for(IPluginDescriptor plugin:this.plugins)
 		{
@@ -490,7 +663,7 @@ public class Core implements ICore
 	 * @see main.ICore#getPluginDescriptor(java.lang.String)
 	 */
 	@Override
-	public IPluginDescriptor getPluginDescriptor(String pluginName)
+	synchronized public IPluginDescriptor getPluginDescriptor(String pluginName)
 	{
 		for(IPluginDescriptor plugin:this.plugins)
 		{
@@ -506,9 +679,17 @@ public class Core implements ICore
 	 * @see main.ICore#getPlugins()
 	 */
 	@Override
-	public ArrayList<IPluginDescriptor> getPlugins()
+	synchronized public ArrayList<IPluginDescriptor> getPlugins()
 	{
-		return this.plugins;
+		try
+		{
+			return this.plugins;
+		}
+		catch(ConcurrentModificationException cme)
+		{
+			this.logError("La liste de plugins n'est pas accessinle");
+			return null;
+		}
 	}
 
 
@@ -516,7 +697,7 @@ public class Core implements ICore
 	 * @see main.ICore#removePlugin(IPluginDescriptor)
 	 */
 	@Override
-	public boolean removePlugin(IPluginDescriptor plugin)
+	synchronized public boolean removePlugin(IPluginDescriptor plugin)
 	{
 		Properties prop=new Properties();
 		try
@@ -525,13 +706,13 @@ public class Core implements ICore
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Impossible de charger le ficher \""+this.fileName+"\"\n"+
+			this.logError("Impossible de charger le ficher \""+this.fileName+"\"\n"+
 						fnfe.getMessage());
 			return false;
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Erreur lors de l'ouverture du ficher \""+this.fileName+"\"\n"
+			this.logError("Erreur lors de l'ouverture du ficher \""+this.fileName+"\"\n"
 						+ioe.getMessage());
 			return false;
 		}
@@ -555,8 +736,8 @@ public class Core implements ICore
 		}
 		if(!found)
 		{
-			System.out.println("[ERROR] La configuration du plugin \""+plugin.getName()+
-					"\" n'a pas Ã©tÃ© trouvÃ©e");
+			this.logError("La configuration du plugin \""+plugin.getName()+
+					"\" n'a pas été trouvée");
 			return false;
 		}
 		try
@@ -566,7 +747,7 @@ public class Core implements ICore
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Impossible d'enregistrer les configuration de la plateforme:\n"+
+			this.logError("Impossible d'enregistrer les configuration de la plateforme:\n"+
 					ioe.getMessage());
 		}
 		
@@ -596,18 +777,66 @@ public class Core implements ICore
 	}
 
 	/**
-	 * DÃ©finit le fichier de configuration de la plateforme
+	 * Définit le fichier de configuration de la plateforme
 	 * @param fileName : {@link String}, Le nom du fichier de configuration
 	 */
+	// A METTRE EN PRIVATE
 //	private void setFileName(String fileName)
 	public void setFileName(String fileName)
 	{
 		this.fileName=fileName;
 	}
-	
+	// A DETRUIRE
 	public void setPath(String path)
 	{
 		this.path=path;
+	}
+	
+	/**
+	 * Write in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to write as LOG
+	 */
+	private void logWrite(String message)
+	{
+		for(Logger log:this.logs)
+		{
+			log.write(message);
+		}
+	}
+
+	/**
+	 * Print in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to print in a logger
+	 */
+	private void logPrint(String message)
+	{
+		for(Logger log:this.logs)
+		{
+			log.print(message);
+		}
+	}
+	
+	/**
+	 * Write an error in all {@link Core#logs loggers}
+	 * @param error : {@link String}, The error to write as ERROR
+	 */
+	private void logError(String error)
+	{
+		for(Logger log:this.logs)
+		{
+			log.error(error);
+		}
+	}
+	
+	/**
+	 * Display all hidden {@link Core#logs loggers}
+	 */
+	private void logDisplay()
+	{
+		for(Logger log:this.logs)
+		{
+			log.display();
+		}
 	}
 
 	
@@ -617,34 +846,6 @@ public class Core implements ICore
 	 */
 	public static void main(String[] args)
 	{
-		System.out.println("[LOG] Chargement du coeur...");
-		Core core=new Core();
-		core.setFileName("config.ini");
-		if(core.loadConfigs())
-		{
-			System.out.println("[LOG] Configurations chargÃ©es");			
-		}
-		System.out.println("[LOG] Chargement des plugins par dÃ©faut...");
-		for(IPluginDescriptor plugin:core.getPlugins())
-		{
-			if(plugin.isDefault())
-			{
-				if(core.loadPlugin(plugin,plugin.isActive())!=null)
-				{
-					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" a Ã©tÃ© chargÃ©");
-			        
-			        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
-			         * son descripteur et on dit qu'il a ete charge
-			         */
-					plugin.setLoaded(true);
-				}
-				else
-				{
-					System.out.println("[LOG] Le plugin \""+plugin.getName()+"\" n'a pas pu Ãªtre chargÃ©");
-				}
-			}
-		}
-		System.out.println("[LOG] Fin d'exÃ©cution");
-        
+		new Core();
 	}
 }

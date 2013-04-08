@@ -66,8 +66,13 @@ public class Core implements ICore
 			return;
 		}
 		
+<<<<<<< HEAD
 		this.logWrite("Chargement des plugins par dÃ©faut...");
 		this.screen.setLabel("Chargement des plugins par dÃ©faut...");
+=======
+		this.logWrite("Chargement des plugins par défaut...");
+		this.screen.setLabel("Chargement des plugins par défaut...");
+>>>>>>> Update some PluginManager bugs
 		this.screen.setNbElement(this.getNbDefaultPlugins());
 		this.screen.setProgress(0);
 		int i=1;
@@ -100,8 +105,13 @@ public class Core implements ICore
 				this.screen.setProgress(i++);
 			}
 		}
+<<<<<<< HEAD
 		this.screen.setLabel("Plateforme chargÃ©e");
 		this.logWrite("Coeur chargÃ©");
+=======
+		this.screen.setLabel("Plateforme chargée");
+		this.logWrite("Coeur chargé");
+>>>>>>> Update some PluginManager bugs
 		this.splashScreenDestruct();
 		this.logDisplay();
 	}
@@ -173,7 +183,11 @@ public class Core implements ICore
 		}
 		catch (MalformedURLException mURLe)
 		{
+<<<<<<< HEAD
 			this.logError("Le chemin dÃ©fini vers \""+librarieName+"\" est incorrect"+
+=======
+			this.logError("Le chemin défini vers \""+librarieName+"\" est incorrect"+
+>>>>>>> Update some PluginManager bugs
 					"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -224,7 +238,11 @@ public class Core implements ICore
 								catch (MalformedURLException mURLe)
 								{
 									this.logError("L'URL vers le plugin \""+plugin.getName()
+<<<<<<< HEAD
 											+"\" est mal dÃ©finie:\n"+mURLe.getMessage());
+=======
+											+"\" est mal définie:\n"+mURLe.getMessage());
+>>>>>>> Update some PluginManager bugs
 									break;
 								}
 							}
@@ -263,7 +281,11 @@ public class Core implements ICore
 		}
 		catch (MalformedURLException mURLe)
 		{
+<<<<<<< HEAD
 			this.logError("Le chemin dÃ©fini vers \""+descriptor.getName()+"\" est incorrect"+
+=======
+			this.logError("Le chemin défini vers \""+descriptor.getName()+"\" est incorrect"+
+>>>>>>> Update some PluginManager bugs
 						"\n"+mURLe.getMessage());
 			return null;
 		}
@@ -271,16 +293,24 @@ public class Core implements ICore
         try
         {
 			c = Class.forName(descriptor.getClassName(),false,ucl);
-		} 
+		}
         catch (ClassNotFoundException cnfe)
         {
         	this.logError("La classe \""+descriptor.getClassName()+"\" pour le plugin \""+
+<<<<<<< HEAD
 						descriptor.getName()+"\" n'a pas Ã©tÃ© trouvÃ©e");
+=======
+						descriptor.getName()+"\" n'a pas été trouvée");
+>>>>>>> Update some PluginManager bugs
 			return null;
 		}
 		if(!IPlugin.class.isAssignableFrom(c))
 		{
+<<<<<<< HEAD
 			this.logError("Ce plugin n'est pas valide: La classe n'implÃ©mente" +
+=======
+			this.logError("Ce plugin n'est pas valide: La classe n'implémente" +
+>>>>>>> Update some PluginManager bugs
 					" pas l'interface \""+IPlugin.class.getName()+"\"");
 			return null;
 		}
@@ -311,7 +341,11 @@ public class Core implements ICore
 			catch (NoSuchMethodException nsme)
 			{
 				this.logError("Le constructeur du plugin \""+
+<<<<<<< HEAD
 							descriptor.getName()+"\" n'a pas pu Ãªtre trouvÃ©");
+=======
+							descriptor.getName()+"\" n'a pas pu être trouvé");
+>>>>>>> Update some PluginManager bugs
 				/* NOTE: Ces trois lignes essayent de charger le plugin avec
 				 * le parametre de chargement actif inverse de celui qu'il
 				 * possede actuellement. Ce qui permet de le charge quand
@@ -326,7 +360,11 @@ public class Core implements ICore
 			catch (SecurityException se)
 			{
 				this.logError("Le constructeur du plugin \""+
+<<<<<<< HEAD
 						descriptor.getName()+"\" n'a pas pu Ãªtre invoquÃ©"+
+=======
+						descriptor.getName()+"\" n'a pas pu être invoqué"+
+>>>>>>> Update some PluginManager bugs
 						"\n"+se.getMessage());
 				if(descriptor.isActive()==active)
 				{
@@ -348,13 +386,21 @@ public class Core implements ICore
 			}
 			if(instance!=null)
 			{
+<<<<<<< HEAD
 				this.logWrite("Le plugin \""+descriptor.getName()+"\" a Ã©tÃ© chargÃ©");
+=======
+				this.logWrite("Le plugin \""+descriptor.getName()+"\" a été chargé");
+>>>>>>> Update some PluginManager bugs
 				descriptor.setPluginInstance(instance);
 				return instance;
 			}
 			else
 			{
+<<<<<<< HEAD
 				this.logError("Le plugin \""+descriptor.getName()+"\" n'a pas pu Ãªtre chargÃ©");
+=======
+				this.logError("Le plugin \""+descriptor.getName()+"\" n'a pas pu être chargé");
+>>>>>>> Update some PluginManager bugs
 				return null;
 			}
 		}
@@ -439,7 +485,11 @@ public class Core implements ICore
 	{
 		if(this.fileName==null)
 		{
+<<<<<<< HEAD
 			this.logError("Aucun fichier de configuration dÃ©finit");
+=======
+			this.logError("Aucun fichier de configuration définit");
+>>>>>>> Update some PluginManager bugs
 			return false;
 		}
     	Properties p=new Properties();
@@ -471,7 +521,11 @@ public class Core implements ICore
 		int nbPlugins=(p.size()-1);
 		this.screen.setNbElement(nbPlugins);
 		int i=1;
+<<<<<<< HEAD
 		this.logWrite(nbPlugins+" plugins prÃ©sents dans:\n\""+path+"\"");
+=======
+		this.logWrite(nbPlugins+" plugins présents dans:\n\""+path+"\"");
+>>>>>>> Update some PluginManager bugs
 		this.logPrint("\tClasses:\t\tPath:\n");
 		this.logPrint("\t---------------------------------\n");
 		for(Object k:p.keySet())
@@ -498,7 +552,11 @@ public class Core implements ICore
 				}
 			}
 		}
+<<<<<<< HEAD
 		this.logWrite("Configurations chargÃ©es");
+=======
+		this.logWrite("Configurations chargées");
+>>>>>>> Update some PluginManager bugs
 		return true;
 	}
 	
@@ -766,7 +824,11 @@ public class Core implements ICore
 		if(!found)
 		{
 			this.logError("La configuration du plugin \""+plugin.getName()+
+<<<<<<< HEAD
 					"\" n'a pas Ã©tÃ© trouvÃ©e");
+=======
+					"\" n'a pas été trouvée");
+>>>>>>> Update some PluginManager bugs
 			return false;
 		}
 		try
@@ -821,10 +883,17 @@ public class Core implements ICore
 		this.path=path;
 	}
 	
+<<<<<<< HEAD
 	/**
 	 * Write in all {@link Core#logs loggers}
 	 * @param message : {@link String}, The message to write as LOG
 	 */
+=======
+	/* (non-Javadoc)
+	 * @see main.ICore#logWrite(java.lang.String)
+	 */
+	@Override
+>>>>>>> Update some PluginManager bugs
 	public void logWrite(String message)
 	{
 		for(ILogger log:this.logs)
@@ -833,10 +902,17 @@ public class Core implements ICore
 		}
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Print in all {@link Core#logs loggers}
 	 * @param message : {@link String}, The message to print in a logger
 	 */
+=======
+	/* (non-Javadoc)
+	 * @see main.ICore#logWrite(java.lang.String)
+	 */
+	@Override
+>>>>>>> Update some PluginManager bugs
 	public void logPrint(String message)
 	{
 		for(ILogger log:this.logs)
@@ -845,10 +921,17 @@ public class Core implements ICore
 		}
 	}
 	
+<<<<<<< HEAD
 	/**
 	 * Write an error in all {@link Core#logs loggers}
 	 * @param error : {@link String}, The error to write as ERROR
 	 */
+=======
+	/* (non-Javadoc)
+	 * @see main.ICore#logWrite(java.lang.String)
+	 */
+	@Override
+>>>>>>> Update some PluginManager bugs
 	public void logError(String error)
 	{
 		for(ILogger log:this.logs)
@@ -857,9 +940,16 @@ public class Core implements ICore
 		}
 	}
 	
+<<<<<<< HEAD
 	/**
 	 * Display all hidden {@link Core#logs loggers}
 	 */
+=======
+	/* (non-Javadoc)
+	 * @see main.ICore#logDisplay()
+	 */
+	@Override
+>>>>>>> Update some PluginManager bugs
 	public void logDisplay()
 	{
 		for(ILogger log:this.logs)

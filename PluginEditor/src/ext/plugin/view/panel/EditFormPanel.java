@@ -12,9 +12,9 @@ import javax.swing.JButton;
 
 import main.ICore;
 import main.plugin.IPlugin;
-import ext.plugin.components.IForm;
-import ext.plugin.components.IItem;
 import ext.plugin.components.PluginFormPoint;
+import ext.plugin.components.interfaces.IForm;
+import ext.plugin.components.interfaces.IItem;
 
 
 public class EditFormPanel extends EditPanel

@@ -8,6 +8,8 @@ import java.awt.Graphics2D;
 
 import javax.swing.ImageIcon;
 
+import ext.plugin.components.interfaces.IForm;
+
 
 public class PluginFormPoint extends IForm
 {

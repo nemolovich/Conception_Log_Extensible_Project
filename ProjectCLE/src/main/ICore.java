@@ -107,6 +107,29 @@ public interface ICore
 	 * @return {@link String} The plugin path
 	 */
 	public abstract String getPath();
+
+	/**
+	 * Write in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to write as LOG
+	 */
+	void logWrite(String message);
+
+	/**
+	 * Print in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to print in a logger
+	 */
+	void logPrint(String message);
+
+	/**
+	 * Write an error in all {@link Core#logs loggers}
+	 * @param error : {@link String}, The error to write as ERROR
+	 */
+	void logError(String error);
+
+	/**
+	 * Display all hidden {@link Core#logs loggers}
+	 */
+	void logDisplay();
 	
 
 }

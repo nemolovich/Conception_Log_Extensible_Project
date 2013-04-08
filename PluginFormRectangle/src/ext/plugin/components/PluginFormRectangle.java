@@ -9,9 +9,18 @@ import javax.swing.ImageIcon;
 
 import main.plugin.IPlugin;
 
+<<<<<<< HEAD
 public class PluginFormRectangle extends IForm implements IItem, IPlugin
 {
 
+=======
+import ext.plugin.components.interfaces.IForm;
+import ext.plugin.components.interfaces.IItem;
+
+public class PluginFormRectangle extends IForm implements IItem, IPlugin
+{
+	
+>>>>>>> Update some PluginManager bugs
 	private String name="PluginFormRectangle";
 
 	public PluginFormRectangle()

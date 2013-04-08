@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
 
+import ext.plugin.controller.Controller;
+
 public class PluginFormRectangle extends IForm
 {
 
@@ -24,7 +26,7 @@ public class PluginFormRectangle extends IForm
 		g2d.setPaint(IForm.CURSOR_COLOR);
 		g2d.drawRect(5, 10 ,10, 8);
 		this.setCursorImage(img, this.formName);
-		this.setIcon(new ImageIcon("img/rectangle_icon_24.png"));
+		this.setIcon(new ImageIcon(Controller.EDITOR_PATH+"img/rectangle_icon_24.png"));
 	}
 
 	@Override
