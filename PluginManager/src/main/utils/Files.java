@@ -41,7 +41,7 @@ public class Files
 	    catch (FileNotFoundException fnfe)
 	    {
 			System.err.println("[ERROR] Erreur lors de la copie du fichier \""+fileName
-					+"\". Fichier non trouvé:\n"+fnfe.getMessage());
+					+"\". Fichier non trouvÃ©:\n"+fnfe.getMessage());
 		}
 	    finally
 	    {
@@ -59,7 +59,7 @@ public class Files
 	/**
 	 * Supprime un fichier ou un dossier si il existe
 	 * @param file : {@link File}, Le fichier/dossier
-	 * @return {@link Boolean boolean}, Si le fichier/dossier a bien été supprimé
+	 * @return {@link Boolean boolean}, Si le fichier/dossier a bien Ã©tÃ© supprimÃ©
 	 * @throws DirectoryNotEmptyException : {@link DirectoryNotEmptyException}, Si
 	 * le dossier a supprimer n'est pas vide
 	 */

@@ -239,7 +239,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		{
 			final File workspace=new File(this.pluginManager.getWorkspace());
 			JFileChooser chooser=new JFileChooser(workspace);
-			chooser.setDialogTitle("Sélectionnez un Projet");
+			chooser.setDialogTitle("SÃ©lectionnez un Projet");
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setDragEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -256,7 +256,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		    	if(importLog!=null)
 		    	{
 					JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
-							+"</i>\" n'a pas pu être chargé:<br/><FONT color=\"#880000\">" +
+							+"</i>\" n'a pas pu Ãªtre chargÃ©:<br/><FONT color=\"#880000\">" +
 							importLog+"</FONT></html>",
 							"Projet invalide", JOptionPane.ERROR_MESSAGE);
 		    	}
@@ -271,7 +271,6 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 						if(index>-1)
 						{
 							this.pluginList.getTableModel().updatePlugin(existPlugin,index);
-							this.loadPlugin.setText("Charger le plugin");
 						}
 					}
 					else
@@ -280,8 +279,8 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 						this.pluginList.getTableModel().addPlugin(newPlugin);
 					}
 					JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
-							+"</i>\" a bien été importé</html>",
-							"Projet importé", JOptionPane.INFORMATION_MESSAGE);
+							+"</i>\" a bien Ã©tÃ© importÃ©</html>",
+							"Projet importÃ©", JOptionPane.INFORMATION_MESSAGE);
 		    	}
 		    }
 		}
@@ -314,7 +313,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				catch (IOException ioe)
 				{
 					JOptionPane.showMessageDialog(this, "<html>Le fichier de configuration de " +
-							"\"<i>"+parent.getName()+"</i>\" n'a pas pu être ouvert:<br/>" +
+							"\"<i>"+parent.getName()+"</i>\" n'a pas pu Ãªtre ouvert:<br/>" +
 							"<FONT color=\"#880000\">"+ioe.getMessage()+"</FONT></html>",
 							"Fichier invalide", JOptionPane.ERROR_MESSAGE);
 				}
@@ -345,7 +344,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		{
 			if(parent!=null)
 			{
-				int remove=JOptionPane.showConfirmDialog(this, "<html><b>Attention!</b> Vous êtes sur " +
+				int remove=JOptionPane.showConfirmDialog(this, "<html><b>Attention!</b> Vous Ãªtes sur " +
 						"le point de supprimer le plugin<br/><center>\"<i>"+parent.getName()+"</i>\"</center>" +
 						"Cette action est irreversible. Continuer?</html>",
 						"Supprimer le plugin?",	JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);

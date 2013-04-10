@@ -46,22 +46,13 @@ public class Controller implements IPlugin
 			{
 				if(!plugin.isLoaded())
 				{
-<<<<<<< HEAD
-					this.core.loadPlugin(plugin, plugin.isActive());
-					plugin.setLoaded(true);
-=======
 					Object o=this.core.loadPlugin(plugin, plugin.isActive());
-					System.out.println("Interfaces ("+o.getClass().getInterfaces().length+"):");
-					for(Class<?> c:o.getClass().getInterfaces())
-					{
-						System.out.println(c.getName());
-					}
+					System.out.println("Super-class: "+o.getClass().getSuperclass().getName());
 					if(o!=null)
 					{
 						plugin.setLoaded(true);
 						plugin.setPluginInstance(o);
 					}
->>>>>>> Update some PluginManager bugs
 				}
 			}
 			this.pluginMainPanel.setPlugins(this.availableFormPlugins);
