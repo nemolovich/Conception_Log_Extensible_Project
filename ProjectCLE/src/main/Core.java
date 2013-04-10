@@ -189,6 +189,7 @@ public class Core implements ICore
 						descriptor.getName()+"\"...");
 		Class<?> c;
 		ArrayList<URL> urls=new ArrayList<URL>();
+		ClassLoader superLoader=ClassLoader.getSystemClassLoader();
 		if(descriptor.getInterfaces().size()>0)
 		{
 			/*
@@ -215,23 +216,27 @@ public class Core implements ICore
 							if(depd.equals(intfce))
 							{
 								found=true;
-								/*
-								 * 
-								 */
-								if(!plugin.isLoaded())
-								{
-									Object o=this.loadPlugin(plugin, plugin.isActive());
-									plugin.setPluginInstance(o);
-								}
 								try
 								{
-									urls.add(new URL("file:"+this.path+plugin.getPath()+File.separator));
+									if(!plugin.isLoaded())
+									{
+										plugin.setLoaded(true);
+										URL urlA[]={new URL("file:"+this.path+plugin.getPath()+File.separator)};
+										Class<?> superClass=Class.forName(plugin.getClassName(),false,
+												new URLClassLoader(urlA));
+										superLoader=superClass.getClassLoader();
+									}
 									break;
 								}
 								catch (MalformedURLException mURLe)
 								{
 									this.logError("L'URL vers le plugin \""+plugin.getName()
 											+"\" est mal définie:\n"+mURLe.getMessage());
+									break;
+								} catch (ClassNotFoundException cnfe)
+								{
+									this.logError("La classe vers le plugin \""+plugin.getName()
+											+"\" est mal définie:\n"+cnfe.getMessage());
 									break;
 								}
 							}
@@ -274,7 +279,9 @@ public class Core implements ICore
 						"\n"+mURLe.getMessage());
 			return null;
 		}
-		URLClassLoader ucl=new URLClassLoader((URL[]) urls.toArray(new URL[0]),ClassLoader.getSystemClassLoader());
+		URLClassLoader ucl=new URLClassLoader((URL[]) urls.toArray(new URL[0]),superLoader);
+		System.out.println(Arrays.toString(((URLClassLoader) superLoader).getURLs()));
+		System.out.println(Arrays.toString(ucl.getURLs()));
         try
         {
 			c = Class.forName(descriptor.getClassName(),false,ucl);
