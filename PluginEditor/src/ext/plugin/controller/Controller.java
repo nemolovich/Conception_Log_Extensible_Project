@@ -38,16 +38,18 @@ public class Controller implements IPlugin
 		OptionPanel optionPanel=new OptionPanel();
 		Controller.EDITOR_PATH=this.core.getPath()+this.core.getPluginDescriptor(this.name).getPath()
 				+File.separator;
-		
+		this.core.getPluginDescriptor(this.name).setLoaded(true);
+		this.core.getPluginDescriptor(this.name).setPluginInstance(this);
 		if(this.core!=null)
 		{
-			this.availableFormPlugins=core.getPuginsByInterface("IForm");
+			IPluginDescriptor controllerPlugin=this.core.getPluginDescriptor(this.name);
+			System.out.println(controllerPlugin.getDependencies().get(0));
+			this.availableFormPlugins=core.getPuginsByInterface(controllerPlugin.getDependencies().get(0));
 			for(IPluginDescriptor plugin:this.availableFormPlugins)
 			{
 				if(!plugin.isLoaded())
 				{
 					Object o=this.core.loadPlugin(plugin, plugin.isActive());
-					System.out.println("Super-class: "+o.getClass().getSuperclass().getName());
 					if(o!=null)
 					{
 						plugin.setLoaded(true);

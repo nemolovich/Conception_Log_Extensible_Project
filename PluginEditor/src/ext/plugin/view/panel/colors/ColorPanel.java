@@ -68,10 +68,10 @@ public class ColorPanel extends JPanel implements MouseListener, KeyListener
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[INFO] L'image du bouton n'a pas pu être chargé:\n"+ioe.getMessage());
+			System.err.println("[INFO] L'image du bouton n'a pas pu être chargé:\n"+ioe.getMessage());
 		}
 		this.switchButton.setIcon(new ImageIcon(img));
-		this.switchButton.setToolTipText("Inverser les couleurs");
+		this.switchButton.setToolTipText("Intervertir les couleurs");
 
 		Font newLabelFont=new Font(this.selectedColorLabel.getFont().getName(),
 				0,12);
@@ -101,7 +101,7 @@ public class ColorPanel extends JPanel implements MouseListener, KeyListener
 		this.backgroundPanel.setBounds(18+(width-160)/2, 20, 25, 15);
 		this.selectedColorLabel.setBounds(50+(width-160)/2, 2, 150, 15);
 		this.inputColor.setBounds(50+(width-160)/2, 18, 75, 23);
-		this.switchButton.setBounds(130+(width-160)/2, 18, 22, 22);
+		this.switchButton.setBounds(130+(width-160)/2, 17, 24, 24);
 		this.setSize(width, 25);
 	}
 

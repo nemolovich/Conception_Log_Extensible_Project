@@ -90,7 +90,7 @@ public class PluginManager implements IPlugin
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Impossible de copier le fichier \""+fileName+"\"\n"+ioe.getMessage());
+			this.core.logError("Impossible de copier le fichier \""+fileName+"\"\n"+ioe.getMessage());
 			return false;
 		}
 	}
@@ -156,7 +156,7 @@ public class PluginManager implements IPlugin
 	 */
 	private boolean createMainClass(String path, String className, boolean active)
 	{
-		System.out.println("[INFO] Création de la classe \""+className+".java\"...");
+		this.core.logWrite("CrÃ©ation de la classe \""+className+".java\"...");
 		FileInputStream fi=null;
 		FileOutputStream fo=null;
 		File tempFile=new File(this.pluginManagerPath+"temp"+File.separator+"example.java");
@@ -196,17 +196,17 @@ public class PluginManager implements IPlugin
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Impossible de créer la classe \""+className+"\"\n"
+			this.core.logError("Impossible de crÃ©er la classe \""+className+"\"\n"
 						+fnfe.getMessage());
 			return false;
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Impossible de créer la classe \""+className+"\"\n"
+			this.core.logError("Impossible de crÃ©er la classe \""+className+"\"\n"
 					+ioe.getMessage());
 			return false;
 		}
-		System.out.println("[INFO] Classe \""+className+".java\" créée");
+		this.core.logWrite("Classe \""+className+".java\" crÃ©Ã©e");
 		
 		return true;
 	}
@@ -220,12 +220,12 @@ public class PluginManager implements IPlugin
 	{
 		if(new File(folder).mkdir())
 		{
-			System.out.println("[INFO] Création du dossier \""+folder+"\"...");
+			this.core.logWrite("CrÃ©ation du dossier \""+folder+"\"...");
 			return true;
 		}
 		else
 		{
-			System.out.println("[INFO] Le dossier \""+folder+"\" existe déjÃ ");
+			this.core.logWrite("Le dossier \""+folder+"\" existe dÃ©jÃ ");
 			return false;
 //			return true;
 		}
@@ -262,7 +262,7 @@ public class PluginManager implements IPlugin
 			if(path.isDirectory())
 			{
 				Files.deleteIfExists(path);
-				System.out.println("[LOG] Dossier \""+path.getName()+"\" supprimé");
+				this.core.logWrite("Dossier \""+path.getName()+"\" supprimÃ©");
 				return true;
 			}
 		}
@@ -274,7 +274,7 @@ public class PluginManager implements IPlugin
 				{
 					if(!this.deleteDirectory(f.getAbsolutePath()))
 					{
-						System.out.println("[ERROR] Impossible de supprimer le dossier \""+
+						this.core.logError("Impossible de supprimer le dossier \""+
 									f.getName()+"\"");
 						return false;
 					}
@@ -283,7 +283,7 @@ public class PluginManager implements IPlugin
 				{
 					if(!Files.deleteIfExists(f))
 					{
-						System.out.println("[ERROR] Impossible de supprimer le fichier \""+
+						this.core.logError("Impossible de supprimer le fichier \""+
 								f.getName()+"\"");
 						return false;
 					}
@@ -300,30 +300,31 @@ public class PluginManager implements IPlugin
 	 * @param active : {@link Boolean boolean}, If the plugin is active
 	 * @return
 	 */
+	@SuppressWarnings("resource")
 	public boolean addPlugin(String pluginName, boolean isDefault, boolean isActive, boolean isLazy,
 			ArrayList<IPluginDescriptor> parents, boolean erase)
 	{
-		System.out.println("[INFO] Adding plugin \""+pluginName+"\"...");
+		this.core.logWrite("Adding plugin \""+pluginName+"\"...");
 		String pluginDir=this.workspace+pluginName+File.separator;
 
 		if(erase)
 		{
 			try
 			{
-				System.out.println("[INFO] Suppression du dossier \""+pluginDir+"\" et de son contenu...");
+				this.core.logWrite("Suppression du dossier \""+pluginDir+"\" et de son contenu...");
 				if(this.deleteDirectory(pluginDir))
 				{
-					System.out.println("[INFO] Dossier \""+pluginDir+"\" supprimé");	
+					this.core.logWrite("Dossier \""+pluginDir+"\" supprimÃ©");	
 				}
 				else
 				{
-					System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu être supprimé");
+					this.core.logError("Le dossier \""+pluginDir+"\" n'a pas pu Ãªtre supprimÃ©");
 					return false;
 				}
 			}
 			catch (IOException ioe)
 			{
-				System.out.println("[ERROR] Le dossier \""+pluginDir+"\" n'a pas pu être supprimé\n"+
+				this.core.logError("Le dossier \""+pluginDir+"\" n'a pas pu Ãªtre supprimÃ©\n"+
 							ioe.getMessage());
 				return false;
 			}
@@ -369,7 +370,7 @@ public class PluginManager implements IPlugin
 			return false;
 		}
 		
-		System.out.println("[INFO] Loading config files...");
+		this.core.logWrite("Loading config files...");
 		XMLConfiguration config=null;
 		try
 		{
@@ -377,7 +378,7 @@ public class PluginManager implements IPlugin
 		}
 		catch (ConfigurationException ce)
 		{
-			System.out.println("[ERROR] La configuration du fichier \"temp/.project\" semble invalide\n"+
+			this.core.logError("La configuration du fichier \"temp/.project\" semble invalide\n"+
 						ce.getMessage());
 			return false;
 		}
@@ -390,7 +391,7 @@ public class PluginManager implements IPlugin
 		}
 		catch (ConfigurationException ce)
 		{
-			System.out.println("[ERROR] La configuration du fichier \""+pluginDir+".project\" semble invalide\n"+
+			this.core.logError("La configuration du fichier \""+pluginDir+".project\" semble invalide\n"+
 					ce.getMessage());
 			return false;
 		}
@@ -401,7 +402,7 @@ public class PluginManager implements IPlugin
 		}
 		catch (ConfigurationException ce)
 		{
-			System.out.println("[ERROR] La configuration du fichier \"temp/.classpath\" semble invalide\n"+
+			this.core.logError("La configuration du fichier \"temp/.classpath\" semble invalide\n"+
 						ce.getMessage());
 		}
 		
@@ -430,7 +431,7 @@ public class PluginManager implements IPlugin
 					}
 					catch (FileNotFoundException fnfe)
 					{
-						System.out.println("[ERROR] Fichier \""+parent.getName()+"_lib.jar\" introuvable");
+						this.core.logError("Fichier \""+parent.getName()+"_lib.jar\" introuvable");
 						return false;
 					}
 		    		ZipOutputStream zip = new ZipOutputStream(new BufferedOutputStream(jar_lib));
@@ -448,77 +449,110 @@ public class PluginManager implements IPlugin
 					path.setValue("lib"+File.separator+parent.getName()+"_lib.jar");
 					entry.addAttribute(path);
 					root.addChild(entry);
+					try
+					{
+						config.save(new File(pluginDir+".classpath"));
+					}
+					catch (ConfigurationException ce)
+					{
+						this.core.logError("La configuration du fichier \""+pluginDir+".classpath\" semble invalide\n"+
+								ce.getMessage());
+						return false;
+					}
 		    		
 					for(String intfce:parent.getDependencies())
 					{
 						interfaces+=intfce+",";
 						String parentPath=this.core.getPluginDescriptor(
 								parent.getName()).getPath();
-						File interfaceFile=new File(this.core.getPath()+parentPath+File.separator+
-								intfce.replaceAll("\\.", File.separator)+".class");
-						
-						if(!interfaceFile.isFile())
+						File[] allFiles;
+						if(intfce.endsWith("*"))
 						{
-							System.out.println("[ERROR] L'interface \""+intfce+".class\" n'a pas pu être trouvée");
-							try
-							{
-								zip.close();
-							}
-							catch (IOException e)
-							{
-								System.out.println("[ERROR] Lors de la fermeture du fichier zip " +
-										"\""+parent.getName()+"_lib.jar\": "+e.getMessage());
-							}
-							return false;
+							allFiles=new File(this.core.getPath()+parentPath+File.separator+
+									intfce.replaceAll("\\.", File.separator).
+									replaceAll("\\*", "")).listFiles();
 						}
 						else
 						{
-							FileInputStream in = null;
-							try
+							allFiles=new File[]{new File(this.core.getPath()+parentPath+File.separator+
+									intfce.replaceAll("\\.", File.separator)+".class")};
+						}
+						
+						for(File interfaceFile:allFiles)
+						{
+							if(!interfaceFile.isFile())
 							{
-								in = new FileInputStream(interfaceFile);
-							}
-							catch (FileNotFoundException fnfe)
-							{
-								System.out.println("[ERROR] Fichier \""+intfce.replaceAll("\\.", File.separator)+
-										".class\" introuvable");
+								this.core.logError("L'interface \""+interfaceFile.getName()+"\" " +
+										"n'a pas pu Ãªtre trouvÃ©e");
 								try
 								{
 									zip.close();
 								}
-								catch (IOException ioe)
+								catch (IOException e)
 								{
-									System.out.println("[ERROR] Lors de la fermeture du fichier zip " +
-											"\""+parent.getName()+"_lib.jar\": "+ioe.getMessage());
-									ioe.printStackTrace();
+									this.core.logError("Lors de la fermeture du fichier zip " +
+											"\""+parent.getName()+"_lib.jar\": "+e.getMessage());
 								}
 								return false;
 							}
-							byte buffer[] = new byte[(int)interfaceFile.length()];
-							String classPath=interfaceFile.getPath();
-							String className=(intfce+".class").substring(intfce.lastIndexOf(".")+1, intfce.length()+6);
-							classPath=classPath.substring(0,classPath.lastIndexOf(File.separator)+1);
-							String[] folds=classPath.substring(classPath.lastIndexOf(parentPath)+
-									parentPath.length()+1, classPath.length()).split("/");
-							classPath="";
-							for(int i=0;i<folds.length;i++)
+							else
 							{
-								classPath+=folds[i]+File.separator;
+								FileInputStream in = null;
 								try
 								{
-									zip.putNextEntry(new ZipEntry(classPath));
+									in = new FileInputStream(interfaceFile);
+								}
+								catch (FileNotFoundException fnfe)
+								{
+									this.core.logError("Fichier \""+interfaceFile.getName()+
+											"\" introuvable");
+									try
+									{
+										zip.close();
+									}
+									catch (IOException ioe)
+									{
+										this.core.logError("Lors de la fermeture du fichier zip " +
+												"\""+parent.getName()+"_lib.jar\": "+ioe.getMessage());
+										ioe.printStackTrace();
+									}
+									return false;
+								}
+								byte buffer[] = new byte[(int)interfaceFile.length()];
+								String classPath=interfaceFile.getPath();
+								String className=interfaceFile.getName();
+								classPath=classPath.substring(0,classPath.lastIndexOf(File.separator)+1);
+								String[] folds=classPath.substring(classPath.lastIndexOf(parentPath)+
+										parentPath.length()+1, classPath.length()).split("/");
+								classPath="";
+								for(int i=0;i<folds.length;i++)
+								{
+									classPath+=folds[i]+File.separator;
+									try
+									{
+										zip.putNextEntry(new ZipEntry(classPath));
+									}
+									catch (IOException ioe)
+									{
+										this.core.logPrint("[WARNING] Impossible d'ajouter le dossier \"" +
+												classPath+"\" dans l'archive:\n"+ioe.getMessage()+"\n");
+									}
+								}
+								try
+								{
+									zip.putNextEntry(new ZipEntry(classPath+className));
 								}
 								catch (IOException ioe)
 								{
-									System.out.println("[ERROR] Impossible d'ajouter le dossier \"" +
-											classPath+"\" dans l'archive"+ioe.getMessage());
+									this.core.logError("Impossible d'ajouter la classe \"" +
+											interfaceFile.getName()+"\" dans l'archive"+ioe.getMessage());
 									try
 									{
 										zip.close();
 									}
 									catch (IOException e)
 									{
-										System.out.println("[ERROR] Lors de la fermeture du fichier zip " +
+										this.core.logError("Lors de la fermeture du fichier zip " +
 												"\""+parent.getName()+"_lib.jar\": "+e.getMessage());
 									}
 									try
@@ -527,28 +561,24 @@ public class PluginManager implements IPlugin
 									}
 									catch (IOException e)
 									{
-										System.out.println("[ERROR] Lors de la fermeture du fichier \""+
-											intfce.replaceAll("\\.", File.separator)+".class\": "+e.getMessage());
+										this.core.logError("Lors de la fermeture du fichier \""+
+												interfaceFile.getName()+"\": "+e.getMessage());
 									}
 									return false;
 								}
-							}
-							try
-							{
-								zip.putNextEntry(new ZipEntry(classPath+className));
-							}
-							catch (IOException ioe)
-							{
-								System.out.println("[ERROR] Impossible d'ajouter la classe \"" +
-										classPath+className+"\" dans l'archive"+ioe.getMessage());
+								int len;
 								try
 								{
-									zip.close();
+									while((len=in.read(buffer))>0)
+									{
+										zip.write(buffer,0,len);
+									}
 								}
-								catch (IOException e)
+								catch (IOException ioe)
 								{
-									System.out.println("[ERROR] Lors de la fermeture du fichier zip " +
-											"\""+parent.getName()+"_lib.jar\": "+e.getMessage());
+									this.core.logError("Impossible d'Ã©crire dans le fichier \""+
+											interfaceFile.getName()+"\""+ioe.getMessage());
+									return false;
 								}
 								try
 								{
@@ -556,34 +586,10 @@ public class PluginManager implements IPlugin
 								}
 								catch (IOException e)
 								{
-									System.out.println("[ERROR] Lors de la fermeture du fichier \""+
-										intfce.replaceAll("\\.", File.separator)+".class\": "+e.getMessage());
+									this.core.logError("Lors de la fermeture du fichier \""+
+											interfaceFile.getName()+"\": "+e.getMessage());
+									return false;
 								}
-								return false;
-							}
-							int len;
-							try
-							{
-								while((len=in.read(buffer))>0)
-								{
-									zip.write(buffer,0,len);
-								}
-							}
-							catch (IOException ioe)
-							{
-								System.out.println("[ERROR] Impossible d'écrire dans le fichier \""+
-										intfce.replaceAll("\\.", File.separator)+".class\""+ioe.getMessage());
-								return false;
-							}
-							try
-							{
-								in.close();
-							}
-							catch (IOException e)
-							{
-								System.out.println("[ERROR] Lors de la fermeture du fichier \""+
-									intfce.replaceAll("\\.", File.separator)+".class\": "+e.getMessage());
-								return false;
 							}
 						}
 					}
@@ -593,7 +599,7 @@ public class PluginManager implements IPlugin
 					}
 					catch (IOException e)
 					{
-						System.out.println("[ERROR] Lors de la fermeture du fichier zip " +
+						this.core.logError("Lors de la fermeture du fichier zip " +
 								"\""+parent.getName()+"_lib.jar\": "+e.getMessage());
 						return false;
 					}
@@ -612,8 +618,8 @@ public class PluginManager implements IPlugin
 						if(!this.copyFile(pluginDir+"lib"+File.separator, this.core.getPath()+
 								"libs"+File.separator, lib))
 						{
-							System.out.println("[ERROR] La librairie \""+lib+"\" n'a pas " +
-									"pû être exportée vers le plugin \""+pluginName+"\"");
+							this.core.logError("La librairie \""+lib+"\" n'a pas " +
+									"pÃ» Ãªtre exportÃ©e vers le plugin \""+pluginName+"\"");
 							return false;
 						}
 					}
@@ -630,7 +636,7 @@ public class PluginManager implements IPlugin
 		}
 		catch (ConfigurationException ce)
 		{
-			System.out.println("[ERROR] La configuration du fichier \""+pluginDir+".classpath\" semble invalide\n"+
+			this.core.logError("La configuration du fichier \""+pluginDir+".classpath\" semble invalide\n"+
 					ce.getMessage());
 			return false;
 		}
@@ -641,19 +647,19 @@ public class PluginManager implements IPlugin
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			System.out.println("[ERROR] Impossible le fichier de configuration\n"
+			this.core.logError("Fichier de configuration non trouvÃ©\n"
 					+fnfe.getMessage());
 			return false;
 		}
 		catch (IOException ioe)
 		{
-			System.out.println("[ERROR] Impossible le fichier de configuration\n"
+			this.core.logError("Impossible d'enregistrer le fichier de configuration\n"
 					+ioe.getMessage());
 			return false;
 		}
-		System.out.println("[INFO] Config file loaded");
+		this.core.logWrite("Config file loaded");
 		
-		System.out.println("[INFO] Plugin \""+pluginName+"\" added");
+		this.core.logWrite("Plugin \""+pluginName+"\" added");
 		
 		return true;
 	}
@@ -769,11 +775,11 @@ public class PluginManager implements IPlugin
 				}
 				catch (FileNotFoundException fnfe)
 				{
-					System.out.println("[ERROR] Le fichier \""+pluginFileConfig+"\" n'a pas été trouvé");
+					this.core.logError("Le fichier \""+pluginFileConfig+"\" n'a pas Ã©tÃ© trouvÃ©");
 				}
 				catch (IOException ioe)
 				{
-					System.out.println("[ERROR] Erreur lors de l'enregistrement de \""+
+					this.core.logError("Erreur lors de l'enregistrement de \""+
 								pluginFileConfig+"\":\n"+ioe.getMessage());
 				}
 			}
@@ -804,7 +810,7 @@ public class PluginManager implements IPlugin
 		if(!new File(path+"config.ini").isFile())
 		{
 			error="Le projet ne contient pas de fichier de configuration";
-			System.out.println("[ERROR] "+error);
+			this.core.logError(""+error);
 			return error;
 		}
 		String pluginName=folder.getName();
@@ -818,14 +824,14 @@ public class PluginManager implements IPlugin
 		{
 			error="Erreur lors de la copie du fichier de configuration:\n"
 					+ioe.getMessage();
-			System.out.println("[ERROR] "+error);
+			this.core.logError(""+error);
 			return error;
 		}
 		File binaries=new File(path+"bin"+File.separator);
 		if(!binaries.exists()||binaries.listFiles().length<1)
 		{
-			error="Le projet ne semble pas avoir été compilé";
-			System.out.println("[ERROR] "+error);
+			error="Le projet ne semble pas avoir Ã©tÃ© compilÃ©";
+			this.core.logError(""+error);
 			return error;
 		}
 
@@ -836,22 +842,22 @@ public class PluginManager implements IPlugin
 		}
 		catch (FileNotFoundException fnfe)
 		{
-			error="Impossible d'accéder au fichier de configuration du plugin";
-			System.out.println("[ERROR] "+error);
+			error="Impossible d'accÃ©der au fichier de configuration du plugin";
+			this.core.logError(""+error);
 			return error;
 		}
 		catch (IOException ioe)
 		{
-			error="Erreur lors de la récupération des configuration du plugin:\n"
+			error="Erreur lors de la rÃ©cupÃ©ration des configuration du plugin:\n"
 					+ioe.getMessage();
-			System.out.println("[ERROR] "+error);
+			this.core.logError(""+error);
 			return error;
 		}
 		String libraries=plugProp.getProperty("libraries");
 		if(libraries==null)
 		{
 			error="Le fichier de configuration ne contient pas d'attribut \"libraries\"";
-			System.out.println("[ERROR] "+error);
+			this.core.logError(""+error);
 			return error;
 		}
 		ArrayList<String> libs=new ArrayList<String>(Arrays.asList(libraries.split(",")));
@@ -869,7 +875,7 @@ public class PluginManager implements IPlugin
 				{
 					error="Impossible de copier a librairie \""+lib+"\" " +
 							"sur la plateforme:\n"+ioe.getMessage();
-					System.out.println("[ERROR] "+error);
+					this.core.logError(""+error);
 					return error;
 				}
 			}
@@ -888,15 +894,15 @@ public class PluginManager implements IPlugin
 		catch (FileNotFoundException fnfe)
 		{
 			error="Le fichier de configuration de la plateforme n'a" +
-			" pas été trouvé";
-			System.out.println("[ERROR] "+error);
+			" pas Ã©tÃ© trouvÃ©";
+			this.core.logError(""+error);
 			return error;
 		}
 		catch (IOException ioe)
 		{
 			error="Erreur lors du chargement des configurations de la" +
 			" plateforme:\n"+ioe.getMessage();
-			System.out.println("[ERROR] "+error);
+			this.core.logError(""+error);
 			return error;
 		}
 		
@@ -934,7 +940,7 @@ public class PluginManager implements IPlugin
 				catch (IOException e)
 				{
 
-					System.out.println("[ERROR] Erreur lors dela copie du fichier \""+
+					this.core.logError("Erreur lors dela copie du fichier \""+
 							destination.toString()+File.separator+file.getName()+"\"");
 				}
 			}
@@ -961,21 +967,30 @@ public class PluginManager implements IPlugin
 			{
 				if(!this.deleteDirectory(pluginPath))
 				{
-					System.out.println("[ERROR] Le dossier du plugin \""+plugin.getName()+
-							"\" n'a pas été supprimé");
+					this.core.logError("Le dossier du plugin \""+plugin.getName()+
+							"\" n'a pas Ã©tÃ© supprimÃ©");
 					return false;
 				}
 			}
 			catch(IOException ioe)
 			{
-				System.out.println("[ERROR] Erreur lors de la suppression du dossier du plugin " +
+				this.core.logError("Erreur lors de la suppression du dossier du plugin " +
 						"\""+plugin.getName()+"\"");
 				return false;
 			}
 			return this.core.removePlugin(plugin);
 		}
-		System.out.println("[ERROR] Le plugin \""+plugin.getName()+"\" n'a pas été trouvé");
+		this.core.logError("Le plugin \""+plugin.getName()+"\" n'a pas Ã©tÃ© trouvÃ©");
 		return false;
+	}
+
+	/**
+	 * Unload this plugin
+	 * @return {@link Boolean boolean}, True if the plugin has been unloaded
+	 */
+	public boolean unload()
+	{
+		return this.core.unload(this.name);
 	}
 	
 	/**
@@ -989,9 +1004,7 @@ public class PluginManager implements IPlugin
 //		core.setFileName("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/config.ini");
 //		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
 //		core.loadConfigs();
-//		core.loadPlugin(core.getPluginDescriptor("PluginManager"), true);
 //		new PluginManager(core);
-//		new PluginManager(null);
 	}
 
 }

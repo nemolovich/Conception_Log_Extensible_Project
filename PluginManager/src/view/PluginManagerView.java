@@ -52,7 +52,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 	private PluginTable pluginList;
 	private PluginManager pluginManager;
 	
-	public PluginManagerView(PluginManager pluginManager, ArrayList<IPluginDescriptor> descriptors)
+	public PluginManagerView(final PluginManager pluginManager, ArrayList<IPluginDescriptor> descriptors)
 	{
 		this.pluginManager=pluginManager;
 		ArrayList<IPluginDescriptor> plugins=descriptors!=null?descriptors:new ArrayList<IPluginDescriptor>();
@@ -74,6 +74,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				public void windowClosing(WindowEvent e) 
 				{
 					System.out.println("Close "+pn+" view");
+					pluginManager.unload();
 					pm.dispose();
 				}
 			});
@@ -295,10 +296,15 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 				this.pluginList.setValueAt(true, this.pluginList.getSelectedRow(), 5);
 				this.pluginManager.getPluginsDescriptors().get(
 						this.pluginManager.getPluginsDescriptors().indexOf(parent)).setLoaded(true);
+				this.loadPlugin.setText("Recharger le plugin");	
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(this, "Le plugin \""+parent.getName()+"\" n'a\n" +
+						"pas pu être chargé.\n(détails dans les logs)", "Plugin non chargé", JOptionPane.ERROR_MESSAGE);
 			}
 			this.pluginList.setRowSelectionInterval(this.pluginList.getSelectedRow(),
 							this.pluginList.getSelectedRow());
-			this.loadPlugin.setText("Recharger le plugin");	
 		}
 		else if(event.getSource()==this.displayFilePlugin)
 		{

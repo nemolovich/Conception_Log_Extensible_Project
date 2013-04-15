@@ -19,8 +19,6 @@ import javax.swing.JSplitPane;
 
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
-import ext.plugin.components.PluginFormPoint;
-import ext.plugin.components.interfaces.IForm;
 import ext.plugin.components.interfaces.IItem;
 import ext.plugin.controller.Controller;
 import ext.plugin.view.panel.EditFormPanel;
@@ -61,6 +59,7 @@ public class PluginMainPanel extends JFrame implements ActionListener
 				public void windowClosing(WindowEvent e) 
 				{
 					System.out.println("Close "+pn+" view");
+					pmp.editPanel.unload(pn);
 					pmp.dispose();
 				}
 			});
@@ -81,8 +80,7 @@ public class PluginMainPanel extends JFrame implements ActionListener
 					{
 						if(optionPanel!=null)
 						{
-							optionPanel.setPanelSize(split.getDividerLocation(), frameHeight,
-									plugins.size()+1*30+30);
+							optionPanel.setPanelSize(split.getDividerLocation(), frameHeight);
 						}
 					}
 				});
@@ -130,72 +128,19 @@ public class PluginMainPanel extends JFrame implements ActionListener
 	 */
 	public void setOptionPanel(OptionPanel optionPanel)
 	{
+		if(this.editPanel==null)
+		{
+			System.err.println("[ERROR] Le panneau d'édition n'est pas défini");
+			return;
+		}
 		this.optionPanel = optionPanel;
-		int nbItem=0;
-		
+
+		this.addOptionItem(this.editPanel.getNewInstanceOfDefaultItem());
 		if(this.plugins!=null)
 		{
 			for(IPluginDescriptor plugin:this.plugins)
 			{
-				try
-				{
-					Object o=plugin.getPluginInstance();
-					
-					Class<?> c=o.getClass().getSuperclass();
-					System.out.println("Try cast to: "+c.getName()+" from "+IForm.class.getName());
-					System.out.println(IForm.class.equals(c));
-					Object b=c.cast(o);
-//					IItem
-					System.out.println(b.getClass().getName());
-//					System.out.println(item);
-				}
-				catch(Exception e)
-				{
-					System.err.println("[ERROR] Impossible de convertir le plugin \""+plugin.getName()+
-							"\" en item compatible:\n"+e.getMessage());
-					e.printStackTrace();
-					continue;
-				}
-//				IItem item=(IItem)plugin.getPluginInstance();
-//				JButton button= new JButton(item.getItemName());
-//				button.setPreferredSize(new Dimension(this.frameWidth-(this.frameWidth-240), 25));
-//				nbItem++;
-//				if(item.getIcon()!=null)
-//				{
-//					button.setIcon(item.getIcon());
-//					button.setText(null);
-//					button.setPreferredSize(new Dimension(26, 26));
-//				}
-//				button.addActionListener(this);
-//				item.setButton(button);
-//				this.optionPanel.getItemPanel().add(button);
-//				if(item.isDefaultItem())
-//				{
-//					this.editPanel.setCurrentItem(item);
-//				}
-			}
-			if(this.editPanel instanceof EditFormPanel)
-			{
-				if(this.getPluginByName(PluginFormPoint.pluginName)==null)
-				{
-					IItem item=(IItem)new PluginFormPoint();
-					JButton button= new JButton(item.getItemName());
-					button.setPreferredSize(new Dimension(this.frameWidth-(this.frameWidth-240), 25));
-					if(item.getIcon()!=null)
-					{
-						button.setIcon(item.getIcon());
-						button.setText(null);
-						button.setPreferredSize(new Dimension(26, 26));
-					}
-					nbItem++;
-					button.addActionListener(this);
-					item.setButton(button);
-					this.optionPanel.getItemPanel().add(button);
-					if(item.isDefaultItem())
-					{
-						this.editPanel.setCurrentItem(item);
-					}
-				}
+				this.addOptionItem((IItem)plugin.getPluginInstance());
 			}
 		}
 		
@@ -203,14 +148,46 @@ public class PluginMainPanel extends JFrame implements ActionListener
 		this.setSize(this.getSize());
 		if(this.editPanel instanceof EditFormPanel)
 		{
-			this.optionPanel.setPanelSize(this.frameWidth, this.frameHeight, (nbItem/6+(nbItem%6>0?1:0))*30+30);
+			this.optionPanel.setPanelSize(this.frameWidth, this.frameHeight);
 		}
 		else
 		{
-			this.optionPanel.setPanelSize(this.frameWidth, this.frameHeight, nbItem+1*30);
+			this.optionPanel.setPanelSize(this.frameWidth, this.frameHeight);
 		}
 		this.getContentPane().add(this.optionPanel, BorderLayout.WEST);
 		this.split.setLeftComponent(this.optionPanel);
+	}
+	
+	/**
+	 * Add an {@link IItem item} in the item list selection
+	 * @param item : {@link IItem}, The item to add
+	 */
+	private void addOptionItem(IItem item)
+	{
+		try
+		{
+			JButton button= new JButton(item.getItemName());
+			button.setPreferredSize(new Dimension(this.frameWidth-(this.frameWidth-240), 25));
+			if(item.getIcon()!=null)
+			{
+				button.setIcon(item.getIcon());
+				button.setText(null);
+				button.setPreferredSize(new Dimension(30, 30));
+			}
+			button.addActionListener(this);
+			item.setButton(button);
+			this.optionPanel.getItemPanel().add(button);
+			if(item.isDefaultItem())
+			{
+				this.editPanel.setCurrentItem(item);
+			}
+		}
+		catch(Exception e)
+		{
+			System.err.println("[ERROR] Impossible de convertir le plugin \""+((IPlugin)item).getName()+
+					"\" en item compatible:\n"+e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 
@@ -271,10 +248,9 @@ public class PluginMainPanel extends JFrame implements ActionListener
 					return;
 				}
 			}
-		}
-		else
-		{
-//			System.out.println(source.getClass().getName());
+			IItem newItem=(IItem) this.editPanel.getNewInstanceOfDefaultItem();
+			this.editPanel.setCurrentItem(newItem);
+			this.editPanel.setDefaultItem(newItem);
 		}
 	}
 }

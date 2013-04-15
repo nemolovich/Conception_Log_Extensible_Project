@@ -240,7 +240,7 @@ public abstract class IForm implements IItem
 	public void setButton(JButton button)
 	{
 		this.button = button;
-		this.button.setToolTipText("Cr�er une forme "+this.formName);
+		this.button.setToolTipText("Créer une forme "+this.formName);
 	}
 
 	/**

@@ -103,10 +103,40 @@ public interface ICore
 			ArrayList<String> libraries, ArrayList<String> dependencies);
 
 	/**
+	 * Unload the plugin. If some plugins depend of this one they will be unload too. 
+	 * @param pluginName : {@link String}, The plugin name
+	 * @return {@link Boolean boolean}, True if the plugin has been correctly unloaded
+	 */
+	public abstract boolean unload(String pluginName);
+	
+	/**
 	 * Return the plugin directory path.
 	 * @return {@link String} The plugin path
 	 */
 	public abstract String getPath();
+	
+	/**
+	 * Write in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to write as LOG
+	 */
+	public abstract void logWrite(String message);
+
+	/**
+	 * Print in all {@link Core#logs loggers}
+	 * @param message : {@link String}, The message to print in a logger
+	 */
+	public abstract void logPrint(String message);
+	
+	/**
+	 * Write an error in all {@link Core#logs loggers}
+	 * @param error : {@link String}, The error to write as ERROR
+	 */
+	public abstract void logError(String error);
+	
+	/**
+	 * Display all hidden {@link Core#logs loggers}
+	 */
+	public abstract void logDisplay();
 	
 
 }

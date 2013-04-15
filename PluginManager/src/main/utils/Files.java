@@ -11,6 +11,7 @@ public class Files
 {
 	public final static int REPLACE_EXISTING=1;
 	
+	@SuppressWarnings("resource")
 	public static void copy(File sourceFile, File destFile, int OPTIONS) throws IOException
 	{
     	String fileName=destFile.getName();

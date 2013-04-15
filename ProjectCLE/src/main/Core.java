@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -104,6 +105,67 @@ public class Core implements ICore
 		this.logWrite("Coeur chargé");
 		this.splashScreenDestruct();
 		this.logDisplay();
+		if(this.plugins.size()==0)
+		{
+			return;
+		}
+		int pluginNumber=0;
+		Scanner sc=new Scanner(System.in);
+		do
+		{
+			System.out.println("Type the plugin number to load (0 to quit)\nAvailable plugins:");
+			for(i=0;i<this.plugins.size();i++)
+			{
+				System.out.printf("\t%d - %s\n",i+1,this.plugins.get(i).getName());
+			}
+			boolean goodChoice=true;
+			try
+			{
+				pluginNumber=sc.nextInt();
+				if(pluginNumber>0&&pluginNumber<=this.plugins.size())
+				{
+					IPluginDescriptor plugin=this.getPluginDescriptor(this.plugins.get(pluginNumber-1).getName());
+					if(plugin.isLoaded())
+					{
+						System.out.println("This plugin is already loaded");
+					}
+					else
+					{
+						this.loadPlugin(plugin, plugin.isActive());
+					}
+				}
+				else
+				{
+					if(pluginNumber!=0)
+					{
+						goodChoice=false;
+					}
+				}
+			}
+			catch(Exception e)
+			{
+				goodChoice=false;
+				sc=new Scanner(System.in);
+			}
+			if(!goodChoice)
+			{
+				System.out.println("Wrong selection");
+				pluginNumber=1;
+			}
+			sc.reset();
+			goodChoice=true;
+		}while(pluginNumber!=0);
+		this.logWrite("Core is leaving...");
+		try
+		{
+			Thread.sleep(1000);
+		}
+		catch (InterruptedException ie)
+		{
+			ie.printStackTrace();
+		}
+		this.logWrite("Core end");
+		System.exit(0);
 	}
 	
 	private boolean loadCore()
@@ -179,7 +241,7 @@ public class Core implements ICore
 		}
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#loadPlugin(main.plugin.IPluginDescriptor, boolean)
 	 */
 	@Override
@@ -189,7 +251,7 @@ public class Core implements ICore
 						descriptor.getName()+"\"...");
 		Class<?> c;
 		ArrayList<URL> urls=new ArrayList<URL>();
-		ClassLoader superLoader=ClassLoader.getSystemClassLoader();
+		ClassLoader superLoader=null;
 		if(descriptor.getInterfaces().size()>0)
 		{
 			/*
@@ -216,16 +278,50 @@ public class Core implements ICore
 							if(depd.equals(intfce))
 							{
 								found=true;
+								/*
+								 * Si le plugin n'est pas chargé et que son instance est nulle
+								 * on demande à le charger avant
+								 */
+								if(!plugin.isLoaded())
+								{
+									if(plugin.getPluginInstance()==null)
+									{
+										this.logError("Le plugin \""+plugin.getName()
+												+"\" n'est pas chargé, chargez le avant");
+										return null;
+									}
+								}
+								superLoader=plugin.getPluginInstance().getClass().getClassLoader();
+								break;
+							}
+						}
+					}
+					if(found)
+					{
+						break;
+					}
+				}
+			}
+		}
+		
+		if(descriptor.getDependencies().size()>0)
+		{
+			/*
+			 * Pour toutes ses dépendance on ajoute son chemin dans le classloader
+			 */
+			for(String depd:descriptor.getDependencies())
+			{
+				for(IPluginDescriptor plugin:this.plugins)
+				{
+					if(plugin.getInterfaces().size()>0)
+					{
+						for(String intfce:plugin.getInterfaces())
+						{
+							if(intfce.equals(depd))
+							{
 								try
 								{
-									if(!plugin.isLoaded())
-									{
-										plugin.setLoaded(true);
-										URL urlA[]={new URL("file:"+this.path+plugin.getPath()+File.separator)};
-										Class<?> superClass=Class.forName(plugin.getClassName(),false,
-												new URLClassLoader(urlA));
-										superLoader=superClass.getClassLoader();
-									}
+									urls.add(new URL("file:"+this.path+plugin.getPath()+File.separator));
 									break;
 								}
 								catch (MalformedURLException mURLe)
@@ -233,18 +329,9 @@ public class Core implements ICore
 									this.logError("L'URL vers le plugin \""+plugin.getName()
 											+"\" est mal définie:\n"+mURLe.getMessage());
 									break;
-								} catch (ClassNotFoundException cnfe)
-								{
-									this.logError("La classe vers le plugin \""+plugin.getName()
-											+"\" est mal définie:\n"+cnfe.getMessage());
-									break;
 								}
 							}
 						}
-					}
-					if(found)
-					{
-						break;
 					}
 				}
 			}
@@ -279,9 +366,15 @@ public class Core implements ICore
 						"\n"+mURLe.getMessage());
 			return null;
 		}
-		URLClassLoader ucl=new URLClassLoader((URL[]) urls.toArray(new URL[0]),superLoader);
-		System.out.println(Arrays.toString(((URLClassLoader) superLoader).getURLs()));
-		System.out.println(Arrays.toString(ucl.getURLs()));
+		ClassLoader ucl;
+		if(superLoader!=null)
+		{
+			ucl=superLoader;
+		}
+		else
+		{
+			ucl=new URLClassLoader((URL[]) urls.toArray(new URL[0]),ClassLoader.getSystemClassLoader());			
+		}
         try
         {
 			c = Class.forName(descriptor.getClassName(),false,ucl);
@@ -301,8 +394,10 @@ public class Core implements ICore
 
         return this.getPluginInstance(descriptor.getName(), (Class<?>)c,  active);
 	}
+	
+	
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPluginInstance(java.lang.String, java.lang.Class, boolean)
 	 */
 	@Override
@@ -445,7 +540,7 @@ public class Core implements ICore
 		}
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#loadConfigs(java.lang.String)
 	 */
 	@Override
@@ -600,7 +695,7 @@ public class Core implements ICore
 		return array;
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPluginConfig(java.lang.String,java.lang.String)
 	 */
 	public IPluginDescriptor getPluginConfig(String pluginName, String pluginPath)
@@ -668,7 +763,7 @@ public class Core implements ICore
 		return descriptor;
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPuginsByInterface(java.lang.String)
 	 */
 	@Override
@@ -686,7 +781,7 @@ public class Core implements ICore
 		return (ArrayList<IPluginDescriptor>) pluglist;
 	}
 	
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPlugin(java.lang.String)
 	 */
 	@Override
@@ -702,7 +797,7 @@ public class Core implements ICore
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPluginDescriptor(java.lang.String)
 	 */
 	@Override
@@ -718,7 +813,7 @@ public class Core implements ICore
 		return null;
 	}
 	
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPlugins()
 	 */
 	@Override
@@ -736,7 +831,7 @@ public class Core implements ICore
 	}
 
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#removePlugin(IPluginDescriptor)
 	 */
 	@Override
@@ -797,7 +892,55 @@ public class Core implements ICore
 		return this.plugins.remove(plugin);
 	}
 
-	/* (non-Javadoc)
+
+	/** (non-Javadoc)
+	 * @see main.ICore#unload(java.lang.String)
+	 */
+	@Override
+	public boolean unload(String pluginName)
+	{
+		for(IPluginDescriptor plugin:this.plugins)
+		{
+			/*
+			 * Trying to found the plugin
+			 */
+			if(plugin.getName().equalsIgnoreCase(pluginName))
+			{
+				/*
+				 * We will unload the dependencies plugins
+				 */
+				if(plugin.getDependencies()!=null&&plugin.getDependencies().size()>0)
+				{
+					for(String depd:plugin.getDependencies())
+					{
+						for(IPluginDescriptor desc:this.plugins)
+						{
+							if(desc.getInterfaces()!=null&&desc.getInterfaces().size()>0)
+							{
+								for(String intfe:desc.getInterfaces())
+								{
+									/*
+									 * If the interface of this plugin equals the dependency we unload it
+									 */
+									if(intfe.equalsIgnoreCase(depd))
+									{
+										this.unload(desc.getName());
+									}
+								}
+							}
+						}
+					}
+				}
+				plugin.setLoaded(false);
+				plugin.setPluginInstance(null);
+				this.logWrite("Plugin \""+plugin.getName()+"\" déchargé");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** (non-Javadoc)
 	 * @see main.ICore#getDescriptor(java.lang.String, java.lang.String, boolean, boolean, boolean, java.lang.String, java.util.ArrayList, java.util.ArrayList)
 	 */
 	@Override
@@ -810,7 +953,7 @@ public class Core implements ICore
 				interfaces, libraries, dependencies);
 	}
 	
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see main.ICore#getPath()
 	 */
 	@Override
@@ -835,10 +978,11 @@ public class Core implements ICore
 		this.path=path;
 	}
 	
-	/**
-	 * Write in all {@link Core#logs loggers}
-	 * @param message : {@link String}, The message to write as LOG
+
+	/** (non-Javadoc)
+	 * @see main.ICore#logWrite(java.lang.String)
 	 */
+	@Override
 	public void logWrite(String message)
 	{
 		for(ILogger log:this.logs)
@@ -847,10 +991,10 @@ public class Core implements ICore
 		}
 	}
 
-	/**
-	 * Print in all {@link Core#logs loggers}
-	 * @param message : {@link String}, The message to print in a logger
+	/** (non-Javadoc)
+	 * @see main.ICore#logPrint(java.lang.String)
 	 */
+	@Override
 	public void logPrint(String message)
 	{
 		for(ILogger log:this.logs)
@@ -858,11 +1002,11 @@ public class Core implements ICore
 			log.print(message);
 		}
 	}
-	
-	/**
-	 * Write an error in all {@link Core#logs loggers}
-	 * @param error : {@link String}, The error to write as ERROR
+
+	/** (non-Javadoc)
+	 * @see main.ICore#logError(java.lang.String)
 	 */
+	@Override
 	public void logError(String error)
 	{
 		for(ILogger log:this.logs)
@@ -870,10 +1014,11 @@ public class Core implements ICore
 			log.error(error);
 		}
 	}
-	
-	/**
-	 * Display all hidden {@link Core#logs loggers}
+
+	/** (non-Javadoc)
+	 * @see main.ICore#logDisplay()
 	 */
+	@Override
 	public void logDisplay()
 	{
 		for(ILogger log:this.logs)

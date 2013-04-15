@@ -4,15 +4,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.ImageIcon;
 
-import main.plugin.IPlugin;
-
 import ext.plugin.components.interfaces.IForm;
-import ext.plugin.components.interfaces.IItem;
 
-public class PluginFormRectangle extends IForm implements IPlugin, IItem
+public class PluginFormRectangle extends IForm
 {
 	
 	private String name="PluginFormRectangle";
@@ -20,15 +18,14 @@ public class PluginFormRectangle extends IForm implements IPlugin, IItem
 	public PluginFormRectangle()
 	{
 		super();
-		System.out.println("New Rect");
 		this.formName="Rectangle";
 		this.fill=10;
 		this.isDraggable=true;
-//		BufferedImage img=this.getCursorImage();
-//		Graphics2D g2d = (Graphics2D) img.getGraphics();
-//		g2d.setPaint(IForm.CURSOR_COLOR);
-//		g2d.drawRect(5, 10 ,10, 8);
-//		this.setCursorImage(img, this.formName);
+		BufferedImage img=this.getCursorImage();
+		Graphics2D g2d = (Graphics2D) img.getGraphics();
+		g2d.setPaint(IForm.CURSOR_COLOR);
+		g2d.drawRect(5, 10 ,10, 8);
+		this.setCursorImage(img, this.formName);
 		this.setIcon(new ImageIcon("ressources/img/rectangle_icon_24.png"));
 	}
 

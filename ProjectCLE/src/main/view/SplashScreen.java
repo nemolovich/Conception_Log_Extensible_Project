@@ -120,7 +120,7 @@ public class SplashScreen extends JFrame
 				});
 				try
 				{
-					Thread.sleep(35);
+					Thread.sleep(10);
 				}
 				catch (InterruptedException e)
 				{

@@ -52,13 +52,15 @@ public class SizePanel extends JPanel implements KeyListener, MouseMotionListene
 		panel.add(this.sizeInput,BorderLayout.EAST);
 		JPanel plusOrMinus=new JPanel();
 		plusOrMinus.setLayout(new GridLayout(2,1));
-		plusOrMinus.setPreferredSize(new Dimension(10,20));
+		plusOrMinus.setPreferredSize(new Dimension(12,24));
 		
-		this.plusButton.setPreferredSize(new Dimension(10,10));
-		this.plusButton.setIcon(new ImageIcon("img/plus.png"));
+		this.plusButton.setPreferredSize(new Dimension(12,12));
+		this.plusButton.setToolTipText("Augmenter la taille");
+		this.plusButton.setIcon(new ImageIcon("ressources/img/plus.png"));
 		
-		this.minusButton.setPreferredSize(new Dimension(10,10));
-		this.minusButton.setIcon(new ImageIcon("img/minus.png"));
+		this.minusButton.setPreferredSize(new Dimension(12,12));
+		this.minusButton.setToolTipText("Diminuer la taille");
+		this.minusButton.setIcon(new ImageIcon("ressources/img/minus.png"));
 		
 		Font littleFont=new Font(this.plusButton.getFont().getName(),0,6);
 		this.plusButton.setFont(littleFont);
@@ -69,7 +71,7 @@ public class SizePanel extends JPanel implements KeyListener, MouseMotionListene
 		panel.add(plusOrMinus,BorderLayout.WEST);
 
 		this.sizeInput.addKeyListener(this);
-		this.sizeInput.setPreferredSize(new Dimension(30,20));
+		this.sizeInput.setPreferredSize(new Dimension(35,20));
 		this.slider.addMouseMotionListener(this);
 		this.minusButton.addActionListener(this);
 		this.plusButton.addActionListener(this);

@@ -90,11 +90,11 @@ public class OptionPanel extends JPanel implements MouseListener
 		}
 	}
 	
-	public void setPanelSize(int optionWidth, int frameHeight, int heightItems)
+	public void setPanelSize(int optionWidth, int frameHeight)
 	{
 		this.setPreferredSize(new Dimension(optionWidth,frameHeight-50));
 		this.setMinimumSize(new Dimension(250,frameHeight-50));
-		this.sizeInput.setMinimumSize(new Dimension(200, 35));
+		this.sizeInput.setMinimumSize(new Dimension(200, 25));
 		this.sizeInput.setPreferredSize(new Dimension(optionWidth-15, 25));
 		int confHeight=60;
 		if(this.colorPanel!=null)
@@ -109,7 +109,6 @@ public class OptionPanel extends JPanel implements MouseListener
 			confHeight+=50;
 		}
 		this.configurationPanel.setPreferredSize(new Dimension(optionWidth,confHeight));
-//		this.itemPanel.setPreferredSize(new Dimension(optionWidth,heightItems));
 	}
 	
 	public Color getBackgroundColor()

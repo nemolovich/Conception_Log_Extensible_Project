@@ -1,6 +1,5 @@
 package main;
 
-import main.ICore;
 import main.plugin.IPlugin;
 
 /**
@@ -10,17 +9,14 @@ import main.plugin.IPlugin;
 public class PluginTest implements IPlugin
 {
 	private String name="PluginTest";
-	private ICore core;
-	
+
 	/**
-	 * Active constructor
-	 * @param core : {@link ICore}, The core
+	 * Passive constructor
 	 */
-	public PluginTest(ICore core)
+	public PluginTest()
 	{
+		System.out.println("Je suis chargé");
 		// TODO Auto-generated method stub
-		this.core = core;
-		new PluginManager(core);
 	}
 
 	/* (non-Javadoc)

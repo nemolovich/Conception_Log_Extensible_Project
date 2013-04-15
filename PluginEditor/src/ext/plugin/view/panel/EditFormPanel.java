@@ -35,6 +35,7 @@ public class EditFormPanel extends EditPanel
 	private Color backgroundColor;
 	private Color foregroundColor;
 	private int drawType=IForm.NORMAL_DRAW;
+	private IForm defaultItem=new PluginFormPoint();
 
 	public EditFormPanel(ICore core)
 	{
@@ -54,6 +55,11 @@ public class EditFormPanel extends EditPanel
 			f.draw(g);			
 		}
 	}
+
+	public void unload(String pluginName)
+	{
+		this.core.unload(pluginName);
+	}
 	
 	public void setForegroundColor(Color foregroundColor)
 	{
@@ -72,15 +78,42 @@ public class EditFormPanel extends EditPanel
 	}
 
 	@Override
+	public void setDefaultItem(IItem form)
+	{
+		this.defaultItem=(IForm) form;
+	}
+
+	@Override
+	public IItem getDefaultItem()
+	{
+		return defaultItem;
+	}
+
+	@Override
+	public IItem getNewInstanceOfDefaultItem()
+	{
+		IItem item=(IItem) this.getNewInstance(null, null, null);
+		this.setDefaultItem((IForm) item);
+		return item;
+	}
+
+	@Override
 	public Object getNewInstance(String itemName,
 			Class<IPlugin> itemClass, JButton itemButton)
 	{
-		Object o=this.core.getPluginInstance(itemName,itemClass,false);
+		Object o=null;
+		if(itemButton!=null&&itemClass!=null)
+		{
+			o=this.core.getPluginInstance(itemName,itemClass,false);
+		}
 		if(o==null)
 		{
 			o=new PluginFormPoint();
 		}
-		((IForm)o).setButton(itemButton);
+		if(itemButton!=null)
+		{
+			((IForm)o).setButton(itemButton);
+		}
 		((IForm)o).setForegroundColor(this.foregroundColor);
 		((IForm)o).setBackgroundColor(this.backgroundColor);
 		((IForm)o).setDrawMode(this.drawType);

@@ -24,12 +24,20 @@ public abstract class EditPanel extends JPanel implements MouseListener, MouseMo
 		super();
 	}
 	
+	public abstract IItem getNewInstanceOfDefaultItem();
+
+	public abstract void setDefaultItem(IItem newItem);
+
+	public abstract IItem getDefaultItem();
+	
 	public abstract void paintComponent(Graphics g);
 
 	public abstract void setCurrentItem(IItem item);
 
 	public abstract Object getNewInstance(String itemName, Class<IPlugin> itemClass,
-			JButton button);
+			JButton itemButton);
+
+	public abstract void unload(String pluginName);
 	
 	public void setSize(int size)
 	{

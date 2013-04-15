@@ -1,6 +1,7 @@
 package view.dialog;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,9 +43,10 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 			this.setTitle(this.getTitle()+" depuis \""+pluginParent.getName()+"\"");
 		}
 		
-		this.setSize(350, 180);
+		this.setSize(350, 190);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
+		this.setLayout(new BorderLayout());
 		this.setDefaultCloseOperation(CreatePluginDialog.DISPOSE_ON_CLOSE);
 		
 		JPanel namePanel=new JPanel();
@@ -60,6 +62,8 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 		loadingPanel.add(this.isDefault);
 
 		JPanel buttonsPanel=new JPanel();
+		buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		buttonsPanel.setAlignmentX(RIGHT_ALIGNMENT);
 		buttonsPanel.add(this.cancelButton);
 		buttonsPanel.add(this.validateButton);
 
