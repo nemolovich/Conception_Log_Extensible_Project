@@ -3,8 +3,6 @@ package ext.plugin.controller;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.swing.UIManager;
-
 import main.ICore;
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
@@ -23,14 +21,6 @@ public class Controller implements IPlugin
 	
 	public Controller(ICore core)
 	{
-		try
-		{
-			UIManager.setLookAndFeel(UIManager.getLookAndFeel());
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 		this.core=core;
 		this.availableFormPlugins= new ArrayList<IPluginDescriptor>();
 		System.out.println("Opening Plugin \""+this.name+"\"");
@@ -43,7 +33,6 @@ public class Controller implements IPlugin
 		if(this.core!=null)
 		{
 			IPluginDescriptor controllerPlugin=this.core.getPluginDescriptor(this.name);
-			System.out.println(controllerPlugin.getDependencies().get(0));
 			this.availableFormPlugins=core.getPuginsByInterface(controllerPlugin.getDependencies().get(0));
 			for(IPluginDescriptor plugin:this.availableFormPlugins)
 			{

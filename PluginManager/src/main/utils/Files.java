@@ -9,16 +9,20 @@ import java.nio.channels.FileChannel;
 
 public class Files
 {
+	public final static int DEFAULT_OPTION=0;
 	public final static int REPLACE_EXISTING=1;
 	
 	@SuppressWarnings("resource")
 	public static void copy(File sourceFile, File destFile, int OPTIONS) throws IOException
 	{
     	String fileName=destFile.getName();
-	    if(!destFile.exists()&&OPTIONS==1)
+    	System.out.println("file: "+fileName);
+	    if(destFile.exists()&&OPTIONS==Files.REPLACE_EXISTING)
 	    {
+	    	System.out.println("exists and replace");
 	        try
 	        {
+	        	System.out.println("delete: "+destFile.delete());
 				destFile.createNewFile();
 			}
 	        catch (IOException ioe)

@@ -91,14 +91,14 @@ public interface ICore
 	 * @param path : {@link String}, The plugin path
 	 * @param isDefault : {@link Boolean boolean}, If the plugin is loaded by default
 	 * @param isActive : {@link Boolean boolean}, If the plugin is active
-	 * @param isLazy : {@link Boolean boolean}, If the plugin is loaded by lazy loading
+	 * @param isSingleton : {@link Boolean boolean}, If the plugin is loaded by singleton loading
 	 * @param className : {@link String}, The plugin class name
 	 * @param interfaces : {@link ArrayList}<{@link String}>, The interfaces dependencies of the plugin
 	 * @param libraries : {@link ArrayList}<{@link String}>, The libraries dependencies of the plugin
 	 * @return {@link IPluginDescriptor}, The plugin descriptor
 	 */
 	public abstract IPluginDescriptor getDescriptor(String name, String path,
-			boolean isDefault, boolean isActive, boolean isLazy,
+			boolean isDefault, boolean isActive, boolean isSingleton,
 			String className, ArrayList<String> interfaces,
 			ArrayList<String> libraries, ArrayList<String> dependencies);
 

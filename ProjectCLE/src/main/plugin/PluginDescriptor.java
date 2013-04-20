@@ -37,9 +37,9 @@ public class PluginDescriptor implements IPluginDescriptor
 	 */
 	private boolean isActive;
 	/**
-	 * Definit si le plugin se fait par un chargement paresseux
+	 * Definit si le plugin est un singleton
 	 */
-	private boolean isLazy;
+	private boolean isSingleton;
 	/**
 	 * L'instance du plugin
 	 */
@@ -55,14 +55,14 @@ public class PluginDescriptor implements IPluginDescriptor
 	 * @param path : {@link String}, The plugin path
 	 * @param isDefault : {@link Boolean boolean}, If the plugin is loaded by default
 	 * @param isActive : {@link Boolean boolean}, If the plugin is active
-	 * @param isLazy : {@link Boolean boolean}, If the plugin is loaded by lazy loading
+	 * @param isSingleton : {@link Boolean boolean}, If the plugin is a singleton
 	 * @param className : {@link String}, The plugin class name
 	 * @param interfaces : {@link ArrayList}<{@link String}>, The interfaces dependencies of the plugin
 	 * @param libraries : {@link ArrayList}<{@link String}>, The libraries dependencies of the plugin
 	 * @param dependencies : {@link ArrayList}<{@link String}>, The libraries dependencies of the plugin
 	 */
 	public PluginDescriptor(String name, String path,
-			boolean isDefault, boolean isActive, boolean isLazy,
+			boolean isDefault, boolean isActive, boolean isSingleton,
 			String className, ArrayList<String> interfaces, ArrayList<String> libraries,
 			ArrayList<String> dependencies)
 	{
@@ -70,7 +70,7 @@ public class PluginDescriptor implements IPluginDescriptor
 		this.path=path;
 		this.isDefault=isDefault;
 		this.isActive=isActive;
-		this.isLazy=isLazy;
+		this.isSingleton=isSingleton;
 		this.className=className;
 		this.interfaces=interfaces;
 		this.libraries=libraries;
@@ -141,12 +141,12 @@ public class PluginDescriptor implements IPluginDescriptor
 	}
 
 	/* (non-Javadoc)
-	 * @see main.plugin.IPluginDescriptor#isLazy()
+	 * @see main.plugin.IPluginDescriptor#isSingleton()
 	 */
 	@Override
-	public boolean isLazy()
+	public boolean isSingleton()
 	{
-		return this.isLazy;
+		return this.isSingleton;
 	}
 
 	/* (non-Javadoc)
@@ -213,12 +213,12 @@ public class PluginDescriptor implements IPluginDescriptor
 	}
 
 	/* (non-Javadoc)
-	 * @see main.plugin.IPluginDescriptor#setLazy(boolean)
+	 * @see main.plugin.IPluginDescriptor#setSingleton(boolean)
 	 */
 	@Override
-	public void setLazy(boolean isLazy)
+	public void setSingleton(boolean isSingleton)
 	{
-		this.isLazy = isLazy;
+		this.isSingleton = isSingleton;
 	}
 
 	/* (non-Javadoc)
@@ -283,7 +283,7 @@ public class PluginDescriptor implements IPluginDescriptor
 	{
 		String out = "main.plugin.Plugin[Name="+this.name+
 				",Default="+this.isDefault+
-				",Lazy="+this.isLazy+
+				",Singleton="+this.isSingleton+
 				",Active="+this.isActive+
 				",Path="+this.path;
 		out+=	",Interfaces={";
@@ -336,7 +336,7 @@ public class PluginDescriptor implements IPluginDescriptor
 				desc.getPath().equals(this.getPath())&&
 				desc.isActive()==this.isActive()&&
 				desc.isDefault()==this.isDefault()&&
-				desc.isLazy()==this.isLazy()&&
+				desc.isSingleton()==this.isSingleton()&&
 				desc.isLoaded()==this.isLoaded()&&
 				desc.getLibraries().size()==this.getLibraries().size()&&
 				desc.getInterfaces().size()==this.getInterfaces().size()&&

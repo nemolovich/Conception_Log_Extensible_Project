@@ -61,16 +61,15 @@ public class ColorPanel extends JPanel implements MouseListener, KeyListener
 		this.backgroundPanel.setBorder(BorderFactory.createLineBorder(Color.decode("#808080")));
 		this.foregroundPanel.setToolTipText(ColorPanel.FOREGROUND_TEXT);
 		this.backgroundPanel.setToolTipText(ColorPanel.BACKGROUND_TEXT);
-		Image img = null;
 		try
 		{
-			img = ImageIO.read(new File("ressources/img/arrow_16.png"));
+			Image img = ImageIO.read(new File("ressources/img/arrow_16.png"));
+			this.switchButton.setIcon(new ImageIcon(img));
 		}
 		catch (IOException ioe)
 		{
 			System.err.println("[INFO] L'image du bouton n'a pas pu être chargé:\n"+ioe.getMessage());
 		}
-		this.switchButton.setIcon(new ImageIcon(img));
 		this.switchButton.setToolTipText("Intervertir les couleurs");
 
 		Font newLabelFont=new Font(this.selectedColorLabel.getFont().getName(),

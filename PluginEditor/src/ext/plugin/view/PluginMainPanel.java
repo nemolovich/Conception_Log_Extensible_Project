@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
+import javax.swing.UIManager;
 
 import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
@@ -41,6 +42,14 @@ public class PluginMainPanel extends JFrame implements ActionListener
 	
 	public PluginMainPanel()
 	{
+		try
+		{
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 		/* For multi desktops */
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		int width = gd.getDisplayMode().getWidth();

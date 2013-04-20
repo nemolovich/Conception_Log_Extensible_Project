@@ -48,10 +48,10 @@ public interface IPluginDescriptor
 	public abstract boolean isActive();
 
 	/**
-	 * Renvoie vrai si le plugin est chargé paresseusement
-	 * @return {@link Boolean boolean}, vrai si le plugin est chargé paresseusement
+	 * Renvoie vrai si le plugin ne peut avoir qu'une instance
+	 * @return {@link Boolean boolean}, vrai si le plugin est un singleton
 	 */
-	public abstract boolean isLazy();
+	public abstract boolean isSingleton();
 
 	/**
 	 * Retourne Le nom du plugin
@@ -96,10 +96,10 @@ public interface IPluginDescriptor
 	public abstract void setActive(boolean isActive);
 
 	/**
-	 * Définit si le plugin est chargé paresseusement
-	 * @param isLazy : {@link Boolean boolean}, vrai si le plugin est chargé paresseusement
+	 * Définit si le plugin ne peut être chargé qu'une fois
+	 * @param isLazy : {@link Boolean boolean}, vrai si le plugin est un singleton
 	 */
-	public abstract void setLazy(boolean isLazy);
+	public abstract void setSingleton(boolean isSingleton);
 
 	/**
 	 * Définit si le plugin est chargé par la plateforme

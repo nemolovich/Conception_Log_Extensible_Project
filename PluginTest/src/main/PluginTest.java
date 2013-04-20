@@ -15,7 +15,6 @@ public class PluginTest implements IPlugin
 	 */
 	public PluginTest()
 	{
-		System.out.println("Je suis chargé");
 		// TODO Auto-generated method stub
 	}
 

@@ -14,7 +14,7 @@ public class PluginTableModel extends AbstractTableModel
 	 */
 	private static final long serialVersionUID = -2058107310824938138L;
  
-    private final String[] header = {"Nom", "Défaut", "Lazy", "Actif", "Chemin", "Chargé"};
+    private final String[] header = {"Nom", "Défaut", "Singleton", "Actif", "Chemin", "Chargé"};
     
     private final ArrayList<IPluginDescriptor> datas = new ArrayList<IPluginDescriptor>();
  
@@ -84,7 +84,7 @@ public class PluginTableModel extends AbstractTableModel
 	        case 1:
 	            return this.getCheckbox(this.datas.get(rowIndex).isDefault());
 	        case 2:
-	            return this.getCheckbox(this.datas.get(rowIndex).isLazy());
+	            return this.getCheckbox(this.datas.get(rowIndex).isSingleton());
 	        case 3:
 	            return this.getCheckbox(this.datas.get(rowIndex).isActive());
 	        case 4:
@@ -108,7 +108,7 @@ public class PluginTableModel extends AbstractTableModel
 	        	((IPluginDescriptor)this.datas.get(rowIndex)).setDefault((Boolean)value);
 	            break;
 	        case 2:
-	        	((IPluginDescriptor)this.datas.get(rowIndex)).setLazy((Boolean)value);
+	        	((IPluginDescriptor)this.datas.get(rowIndex)).setSingleton((Boolean)value);
 	            break;
 	        case 3:
 	        	((IPluginDescriptor)this.datas.get(rowIndex)).setActive((Boolean)value);
@@ -133,7 +133,7 @@ public class PluginTableModel extends AbstractTableModel
 	{
 		((IPluginDescriptor)this.datas.get(rowIndex)).setName(plugin.getName());
 		((IPluginDescriptor)this.datas.get(rowIndex)).setDefault(plugin.isDefault());
-		((IPluginDescriptor)this.datas.get(rowIndex)).setLazy(plugin.isLazy());
+		((IPluginDescriptor)this.datas.get(rowIndex)).setSingleton(plugin.isSingleton());
 		((IPluginDescriptor)this.datas.get(rowIndex)).setActive(plugin.isActive());
 		((IPluginDescriptor)this.datas.get(rowIndex)).setLoaded(plugin.isLoaded());
         this.fireTableRowsUpdated(rowIndex, rowIndex);

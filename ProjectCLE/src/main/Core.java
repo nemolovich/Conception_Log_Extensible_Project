@@ -67,6 +67,20 @@ public class Core implements ICore
 			return;
 		}
 		
+		this.loadDefaultPlugins();
+		
+		this.screen.setLabel("Plateforme chargée");
+		this.logWrite("Coeur chargé");
+		this.splashScreenDestruct();
+		this.logDisplay();
+		this.consolePluginList();
+	}
+	
+	/**
+	 * Charge tous les plugin par défaut
+	 */
+	private void loadDefaultPlugins()
+	{
 		this.logWrite("Chargement des plugins par défaut...");
 		this.screen.setLabel("Chargement des plugins par défaut...");
 		this.screen.setNbElement(this.getNbDefaultPlugins());
@@ -101,20 +115,24 @@ public class Core implements ICore
 				this.screen.setProgress(i++);
 			}
 		}
-		this.screen.setLabel("Plateforme chargée");
-		this.logWrite("Coeur chargé");
-		this.splashScreenDestruct();
-		this.logDisplay();
+	}
+
+	/**
+	 * Permet de charger les plugins manuellement à partir de la console
+	 */
+	private void consolePluginList()
+	{
 		if(this.plugins.size()==0)
 		{
 			return;
 		}
 		int pluginNumber=0;
+		@SuppressWarnings("resource")
 		Scanner sc=new Scanner(System.in);
 		do
 		{
 			System.out.println("Type the plugin number to load (0 to quit)\nAvailable plugins:");
-			for(i=0;i<this.plugins.size();i++)
+			for(int i=0;i<this.plugins.size();i++)
 			{
 				System.out.printf("\t%d - %s\n",i+1,this.plugins.get(i).getName());
 			}
@@ -165,9 +183,13 @@ public class Core implements ICore
 			ie.printStackTrace();
 		}
 		this.logWrite("Core end");
-		System.exit(0);
+		System.exit(0);		
 	}
-	
+
+	/**
+	 * Initialisation du coeur
+	 * @return {@link Boolean boolean}, Vrai si l'intitialisation s'est déroulée correctement
+	 */
 	private boolean loadCore()
 	{
 		this.logWrite("Chargement du coeur...");
@@ -203,7 +225,7 @@ public class Core implements ICore
 	}
 	
 	/**
-	 * Destroy the splashscreen
+	 * Détruit le SplashScreen
 	 */
 	private void splashScreenDestruct()
 	{
@@ -247,6 +269,12 @@ public class Core implements ICore
 	@Override
 	public Object loadPlugin(IPluginDescriptor descriptor, boolean active)
 	{
+		// On vérifie si le plugin est déjà chargé et que ce n'est pas un singleton
+		if(descriptor.isSingleton()&&descriptor.isLoaded())
+		{
+			this.logError("Le plugin \""+descriptor.getName()+"\" ne peut être chargé qu'une seule fois");
+			return null;
+		}
 		this.logWrite("Chargement ("+(active?"actif":"passif")+") du plugin \""+
 						descriptor.getName()+"\"...");
 		Class<?> c;
@@ -577,6 +605,12 @@ public class Core implements ICore
 			this.logError("Le fichier \""+this.fileName+"\" ne contient pas d'attribut \"pluginsPath\"");
 			return false;
 		}
+		if(!new File(this.path).exists())
+		{
+			this.path=new File("plugins").getAbsolutePath()+File.separator;
+			this.logError("Le chemin vers le dossier de plugins n'est pas valide. " +
+					"Utilisation du chemin: \""+this.path+"\"");
+		}
 		int nbPlugins=(p.size()-1);
 		this.screen.setNbElement(nbPlugins);
 		int i=1;
@@ -739,8 +773,8 @@ public class Core implements ICore
 		{
 			return null;
 		}
-		Boolean pluginIsLazy=this.getBooleanProperty(prop, "lazy", pluginFileConfig);
-		if(pluginIsLazy==null)
+		Boolean pluginIsSingleton=this.getBooleanProperty(prop, "singleton", pluginFileConfig);
+		if(pluginIsSingleton==null)
 		{
 			return null;
 		}
@@ -757,9 +791,9 @@ public class Core implements ICore
 		this.logPrint(String.format("\t  |-> %-10s %s\n\t  |-> %-10s %s\n\t  '-> %-10s %s\n",
 				"Default:",pluginIsDefault?"Oui":"Non",
 				"Active:",pluginIsActive?"Oui":"Non",
-				"Lazy:",pluginIsLazy?"Oui":"Non"));
+				"Singleton:",pluginIsSingleton?"Oui":"Non"));
 		PluginDescriptor descriptor=new PluginDescriptor(pluginName,pluginPath,pluginIsDefault,
-				pluginIsActive,pluginIsLazy,className,pluginInterfaces,pluginLibraries,pluginDependencies);
+				pluginIsActive,pluginIsSingleton,className,pluginInterfaces,pluginLibraries,pluginDependencies);
 		return descriptor;
 	}
 
@@ -945,11 +979,11 @@ public class Core implements ICore
 	 */
 	@Override
 	public IPluginDescriptor getDescriptor(String name, String path,
-			boolean isDefault, boolean isActive, boolean isLazy,
+			boolean isDefault, boolean isActive, boolean isSingleton,
 			String className, ArrayList<String> interfaces,
 			ArrayList<String> libraries, ArrayList<String> dependencies)
 	{
-		return new PluginDescriptor(name, path, isDefault, isActive, isLazy, className,
+		return new PluginDescriptor(name, path, isDefault, isActive, isSingleton, className,
 				interfaces, libraries, dependencies);
 	}
 	
@@ -1027,7 +1061,6 @@ public class Core implements ICore
 		}
 	}
 
-	
 	/**
 	 * The main function
 	 * @param args

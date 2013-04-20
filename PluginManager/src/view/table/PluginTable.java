@@ -42,7 +42,7 @@ public class PluginTable extends JTable
 		this.getTableHeader().setReorderingAllowed(false);
 		this.setColonneSize(0, 150);
 		this.setColonneSize(1, 65);
-		this.setColonneSize(2, 55);
+		this.setColonneSize(2, 80);
 		this.setColonneSize(3, 55);
 		this.getColumnModel().getColumn(4).setMinWidth(55);
 		this.setColonneSize(5, 70);

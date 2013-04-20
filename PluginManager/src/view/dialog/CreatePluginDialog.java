@@ -25,7 +25,7 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 	private static final long serialVersionUID = -80941485217196005L;
 	private JTextField pluginName=new JTextField();
 	private JCheckBox isActive=new JCheckBox("Actif");
-	private JCheckBox isLazy=new JCheckBox("Lazy");
+	private JCheckBox isSingleton=new JCheckBox("Singleton");
 	private JCheckBox isDefault=new JCheckBox("Par défaut");
 	private JButton validateButton=new JButton("Créer le plugin");
 	private JButton cancelButton=new JButton("Annuler");
@@ -43,7 +43,7 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 			this.setTitle(this.getTitle()+" depuis \""+pluginParent.getName()+"\"");
 		}
 		
-		this.setSize(350, 190);
+		this.setSize(350, 200);
 		this.setLocationRelativeTo(null);
 		this.setResizable(false);
 		this.setLayout(new BorderLayout());
@@ -58,7 +58,7 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 		loadingPanel.setLayout(new GridLayout(3, 1));
 		loadingPanel.setBorder(BorderFactory.createTitledBorder("Type de chargement"));
 		loadingPanel.add(this.isActive);
-		loadingPanel.add(this.isLazy);
+		loadingPanel.add(this.isSingleton);
 		loadingPanel.add(this.isDefault);
 
 		JPanel buttonsPanel=new JPanel();
@@ -85,14 +85,6 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 			if(this.getVerifName()!=null)
 			{
 				this.validated=true;
-				JOptionPane.showMessageDialog(this, "<html><b> Le plugin \""+this.getPluginName()+
-				"\" a bien été créé.</b><br/>Pour l'ajouter en tant que projet à eclipse:<br/>" +
-				"<ul><li><i>File</i> -> <i>Import...</i> -> <i>Existing Project into Workspace</i></li>" +
-				"<li><i>Next ></i></li>" +
-				"<li><i>Browse...</i></li>" +
-				"<li>Selectionnez le dossier dans le workspace et validez</li>" +
-				"</ul></html>", "Plugin \""+this.getPluginName()+"\" créé",
-				JOptionPane.INFORMATION_MESSAGE);
 				this.dispose();
 			}
 			else
@@ -117,9 +109,9 @@ public class CreatePluginDialog extends JDialog implements ActionListener
 		return this.isActive.isSelected();
 	}
 	
-	public boolean isLazy()
+	public boolean isSingleton()
 	{
-		return this.isLazy.isSelected();
+		return this.isSingleton.isSelected();
 	}
 	
 	public boolean isDefault()

@@ -301,7 +301,7 @@ public class PluginManager implements IPlugin
 	 * @return
 	 */
 	@SuppressWarnings("resource")
-	public boolean addPlugin(String pluginName, boolean isDefault, boolean isActive, boolean isLazy,
+	public boolean addPlugin(String pluginName, boolean isDefault, boolean isActive, boolean isSingleton,
 			ArrayList<IPluginDescriptor> parents, boolean erase)
 	{
 		this.core.logWrite("Adding plugin \""+pluginName+"\"...");
@@ -410,7 +410,7 @@ public class PluginManager implements IPlugin
 		prop.setProperty("className","main."+pluginName);
 		prop.setProperty("active",isActive?"true":"false");
 		prop.setProperty("default",isDefault?"true":"false");
-		prop.setProperty("lazy",isLazy?"true":"false");
+		prop.setProperty("singleton",isSingleton?"true":"false");
 		
 		String interfaces="";
 		String libraries="";
@@ -757,7 +757,7 @@ public class PluginManager implements IPlugin
 				prop.setProperty("className", plugin.getClassName());
 				prop.setProperty("active",plugin.isActive()?"true":"false");
 				prop.setProperty("default",plugin.isDefault()?"true":"false");
-				prop.setProperty("lazy",plugin.isLazy()?"true":"false");
+				prop.setProperty("singleton",plugin.isSingleton()?"true":"false");
 				String[] interfacesArray=plugin.getInterfaces().toArray(new String[0]);
 				String interfaces=StringUtils.join(interfacesArray,",");
 				prop.setProperty("interfaces",interfaces);
@@ -1004,6 +1004,7 @@ public class PluginManager implements IPlugin
 //		core.setFileName("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/config.ini");
 //		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
 //		core.loadConfigs();
+//		core.logDisplay();
 //		new PluginManager(core);
 	}
 

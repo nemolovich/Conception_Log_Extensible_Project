@@ -24,6 +24,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 
 import main.PluginManager;
 import main.plugin.IPluginDescriptor;
@@ -37,8 +38,8 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 	 * ID
 	 */
 	private static final long serialVersionUID = -8256310508582962335L;
-	private int frameWidth=920;
-	private int frameHeight=600;
+	private int frameWidth=720;
+	private int frameHeight=350;
 	private JButton addPlugin=new JButton("Ajouter un plugin");
 	private JButton addPluginFrom=new JButton("<html><center>Ajouter un plugin depuis le plugin:" +
 			"<br/>\"<i>null</i>\"</center</html>");
@@ -54,15 +55,31 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 	
 	public PluginManagerView(final PluginManager pluginManager, ArrayList<IPluginDescriptor> descriptors)
 	{
+		try
+		{
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 		this.pluginManager=pluginManager;
 		ArrayList<IPluginDescriptor> plugins=descriptors!=null?descriptors:new ArrayList<IPluginDescriptor>();
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		int width = gd.getDisplayMode().getWidth();
 		int height = gd.getDisplayMode().getHeight();
-		this.frameWidth=width/2;
-		this.frameHeight=height/2;
+		int minWidth=700;
+		int minHeight=280;
+		if(width/2>=minWidth)
+		{
+			this.frameWidth=width/2;
+		}
+		if(height/2>=minHeight)
+		{
+			this.frameHeight=height/2;
+		}
 		this.setSize(this.frameWidth, this.frameHeight);
-		this.setMinimumSize(new Dimension(650,280));
+		this.setMinimumSize(new Dimension(minWidth,minHeight));
 		this.setTitle("Plugin Manager");
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -212,10 +229,29 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 			{
 				String pluginName=createPlugin.getPluginName();
 				boolean isActive=createPlugin.isActive();
-				boolean isLazy=createPlugin.isLazy();
+				boolean isSingleton=createPlugin.isSingleton();
 				boolean isDefault=createPlugin.isDefault();
 				boolean isErased=createPlugin.isErased();
-	        	this.pluginManager.addPlugin(pluginName, isDefault, isActive, isLazy, null, isErased);
+				boolean created=this.pluginManager.addPlugin(pluginName, isDefault, isActive, isSingleton, null, isErased);
+	        	if(created)
+	        	{
+					JOptionPane.showMessageDialog(this, "<html><b> Le plugin \""+pluginName+
+					"\" a bien été créé.</b><br/>Pour l'ajouter en tant que projet à eclipse:<br/>" +
+					"<ul><li><i>File</i> -> <i>Import...</i> -> <i>Existing Project into Workspace</i></li>" +
+					"<li><i>Next ></i></li>" +
+					"<li><i>Browse...</i></li>" +
+					"<li>Selectionnez le dossier dans le workspace et validez</li>" +
+					"</ul></html>", "Plugin \""+pluginName+"\" créé",
+					JOptionPane.INFORMATION_MESSAGE);
+	        	}
+	        	else
+	        	{
+					JOptionPane.showMessageDialog(this, "<html><FONT color=\"#FF0000\">" +
+					"Le plugin </FONT>\"<b>"+pluginName+
+					"\"</b> <FONT color=\"#FF0000\">n'a pas pû être créé</FONT></html>",
+					"Plugin \""+pluginName+"\" non créé",
+					JOptionPane.ERROR_MESSAGE);
+	        	}
 			}
 		}
 		else if(event.getSource()==this.addPluginFrom)
@@ -229,11 +265,29 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 			{
 				String pluginName=createPlugin.getPluginName();
 				boolean isActive=createPlugin.isActive();
-				boolean isLazy=createPlugin.isLazy();
+				boolean isSingleton=createPlugin.isSingleton();
 				boolean isDefault=createPlugin.isDefault();
 				boolean isErased=createPlugin.isErased();
-	        	this.pluginManager.addPlugin(pluginName, isDefault, isActive, isLazy,
+	        	boolean created=this.pluginManager.addPlugin(pluginName, isDefault, isActive, isSingleton,
 	        			new ArrayList<IPluginDescriptor>(Arrays.asList(parent)), isErased);
+	        	if(created)
+	        	{
+					JOptionPane.showMessageDialog(this, "<html><b> Le plugin \""+pluginName+
+					"\" a bien été créé.</b><br/>Pour l'ajouter en tant que projet à eclipse:<br/>" +
+					"<ul><li><i>File</i> -> <i>Import...</i> -> <i>Existing Project into Workspace</i></li>" +
+					"<li><i>Next ></i></li>" +
+					"<li><i>Browse...</i></li>" +
+					"<li>Selectionnez le dossier dans le workspace et validez</li>" +
+					"</ul></html>", "Plugin \""+pluginName+"\" créé",
+					JOptionPane.INFORMATION_MESSAGE);
+	        	}
+	        	else
+	        	{
+					JOptionPane.showMessageDialog(this, "<html>Le plugin \"<b>"+pluginName+
+					"\"</b> <FONT color=\"#FF0000\">n'a pas pû être créé</FONT></html>",
+					"Plugin \""+pluginName+"\" non créé",
+					JOptionPane.ERROR_MESSAGE);
+	        	}
 			}
 		}
 		else if(event.getSource()==this.importPlugin)
@@ -257,13 +311,21 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		    	if(importLog!=null)
 		    	{
 					JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
-							+"</i>\" n'a pas pu être chargé:<br/><FONT color=\"#880000\">" +
+							+"</i>\" n'a pas pu être importé:<br/><FONT color=\"#880000\">" +
 							importLog+"</FONT></html>",
 							"Projet invalide", JOptionPane.ERROR_MESSAGE);
 		    	}
 		    	else
 		    	{
 					IPluginDescriptor newPlugin=this.pluginManager.getPluginConfig(projectName, projectName);
+					if(newPlugin==null)
+					{
+						JOptionPane.showMessageDialog(this, "<html>Le projet \"<i>"+projectName
+								+"</i>\" n'a pas pu être importé.<br/>" +
+								"(détails dans les logs)</html>",
+								"Projet non importé", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 					IPluginDescriptor existPlugin=this.pluginManager.getPluginDescriptor(newPlugin.getName());
 					if(existPlugin!=null)
 					{
