@@ -1,5 +1,4 @@
 package main;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -27,24 +26,38 @@ import main.plugin.IPluginDescriptor;
 import main.plugin.PluginDescriptor;
 import main.view.SplashScreen;
 
+
+/**
+ * Cette classe correspond à la plateforme
+ * @author Brian GOHIER
+ */
 public class Core implements ICore
 {
 
 	/**
 	 * Tous les {@link IPluginDescriptor descripteurs de plugin} lus dans le fichier de config
-	 * file from the core.
+	 * du coeur.
 	 */
 	private ArrayList<IPluginDescriptor> plugins=new ArrayList<IPluginDescriptor>();
 	/**
-	 * The core path.
+	 * Le chemin vers lequel sont situés les plugins
 	 */
 	private String path;
+	/**
+	 * Le chemin vers le fichier de configuration du coeur
+	 */
 	private String fileName;
+	/**
+	 * Le SplahScreen de la plateforme
+	 */
 	private SplashScreen screen;
+	/**
+	 * La liste des journaux de logs du coeur
+	 */
 	private ArrayList<ILogger> logs=new ArrayList<ILogger>();
 
 	/**
-	 * Constructeur
+	 * Constructeur par défaut qui lance la plateforme
 	 */
 	public Core()
 	{
@@ -104,8 +117,8 @@ public class Core implements ICore
 				}
 				if(this.loadPlugin(plugin,plugin.isActive())!=null)
 				{
-			        /* Si la classe a pu etre chargee on definie cette classe pour le plugin dans
-			         * son descripteur et on dit qu'il a ete charge
+			        /* Si la classe a pu être chargée on dit à son
+			         * descipteur a été chargé
 			         */
 					plugin.setLoaded(true);
 				}
@@ -187,8 +200,9 @@ public class Core implements ICore
 	}
 
 	/**
-	 * Initialisation du coeur
-	 * @return {@link Boolean boolean}, Vrai si l'intitialisation s'est déroulée correctement
+	 * Initialisation du coeur et de charger les configurations
+	 * @return {@link Boolean boolean}, Vrai si l'intitialisation
+	 * s'est déroulée correctement
 	 */
 	private boolean loadCore()
 	{
@@ -235,8 +249,8 @@ public class Core implements ICore
 	
 	/**
 	 * Retourne l'URL du chemin vers une librairie donnée
-	 * @param librarieName : {@link String}, The library name
-	 * @return {@link URL}, The URL to library path
+	 * @param librarieName : {@link String}, Le nom de la librairie
+	 * @return {@link URL}, L'URL du chemin de la librairie
 	 */
 	private URL getLibraryURL(String librarieName)
 	{
@@ -263,7 +277,7 @@ public class Core implements ICore
 		}
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#loadPlugin(main.plugin.IPluginDescriptor, boolean)
 	 */
 	@Override
@@ -425,7 +439,7 @@ public class Core implements ICore
 	
 	
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPluginInstance(java.lang.String, java.lang.Class, boolean)
 	 */
 	@Override
@@ -450,9 +464,9 @@ public class Core implements ICore
 				this.logError("Le constructeur du plugin \""+
 							descriptor.getName()+"\" n'a pas pu être trouvé");
 				/* NOTE: Ces trois lignes essayent de charger le plugin avec
-				 * le parametre de chargement actif inverse de celui qu'il
-				 * possede actuellement. Ce qui permet de le charge quand
-				 * meme, meme si le fichier de configuration est mauvais.
+				 * le paramètre de chargement actif inverse de celui qu'il
+				 * possède actuellement. Ce qui permet de le charger quand
+				 * même, même si le fichier de configuration est mauvais.
 				 */
 				if(descriptor.isActive()==active)
 				{
@@ -568,7 +582,7 @@ public class Core implements ICore
 		}
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#loadConfigs(java.lang.String)
 	 */
 	@Override
@@ -646,8 +660,9 @@ public class Core implements ICore
 	}
 	
 	/**
-	 * Return the number of default plugins
-	 * @return {@link Integer int}, Number of default plugins
+	 * Retourne le nombre de plugins par défaut présents dans le
+	 * fichier de configuration
+	 * @return {@link Integer int}, Le nombre de plugins par défaut
 	 */
 	synchronized private int getNbDefaultPlugins()
 	{
@@ -667,37 +682,41 @@ public class Core implements ICore
 	}
 
 	/**
-	 * Return the string property from a config file
-	 * @param prop : {@link Properties}, The properties
-	 * @param propertyName : {@link String}, The property name
-	 * @param pluginFileConfig : {@link String}, The plugin file config
-	 * @return {@link String}, The string property
+	 * Retourne la {@link String chaîne de caractères} qui correspond
+	 * à la propriété donnée dans une liste de {@link Properties propriétés}
+	 * dans un fichier de configuration
+	 * @param prop : {@link Properties}, La liste de propriétés
+	 * @param propertyName : {@link String}, Le nom de la propriété
+	 * @param fileConfig : {@link String}, Le fichier de configuration
+	 * @return {@link String}, La valeur de la propriété
 	 */
-	private String getStringProperty(Properties prop, String propertyName, String pluginFileConfig)
+	private String getStringProperty(Properties prop, String propertyName, String fileConfig)
 	{
 		String property=prop.getProperty(propertyName);
 		if(property==null)
 		{
-			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+			this.logError("\t - Le fichier \""+fileConfig+"\" ne contient pas d'attribut \""+
 					propertyName+"\"");
 		}
 		return property;
 	}
 
 	/**
-	 * Return the boolean property from a config file
-	 * @param prop : {@link Properties}, The properties
-	 * @param propertyName : {@link String}, The property name
-	 * @param pluginFileConfig : {@link String}, The plugin file config
-	 * @return {@link Boolean}, The boolean property
+	 * Retourne le {@link Boolean booleén} qui correspond
+	 * à la propriété donnée dans une liste de {@link Properties propriétés}
+	 * dans un fichier de configuration
+	 * @param prop : {@link Properties}, La liste de propriétés
+	 * @param propertyName : {@link String}, Le nom de la propriété
+	 * @param fileConfig : {@link String}, Le fichier de configuration
+	 * @return {@link Boolean}, La valeur de la propriété
 	 */
 	private Boolean getBooleanProperty(Properties prop, String propertyName,
-			String pluginFileConfig)
+			String fileConfig)
 	{
 		String property=prop.getProperty(propertyName);
 		if(property==null)
 		{
-			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+			this.logError("\t - Le fichier \""+fileConfig+"\" ne contient pas d'attribut \""+
 					propertyName+"\"");
 			return null;
 		}
@@ -705,20 +724,22 @@ public class Core implements ICore
 	}
 
 	/**
-	 * Return the array property from a config file
-	 * @param prop : {@link Properties}, The properties
-	 * @param propertyName : {@link String}, The property name
-	 * @param pluginFileConfig : {@link String}, The plugin file config
-	 * @return {@link ArrayList}<{@link String}>, The array property
+	 * Retourne la {@link ArrayList liste} de {@link String chaînes de caractères}
+	 * qui correspond à la propriété donnée dans une liste de 
+	 * {@link Properties propriétés} dans un fichier de configuration
+	 * @param prop : {@link Properties}, La liste de propriétés
+	 * @param propertyName : {@link String}, Le nom de la propriété
+	 * @param fileConfig : {@link String}, Le fichier de configuration
+	 * @return {@link ArrayList}<{@link String}>, La valeur de la propriété
 	 */
 	private ArrayList<String> getArrayProperty(Properties prop, String propertyName,
-			String pluginFileConfig)
+			String fileConfig)
 	{
 		String property=prop.getProperty(propertyName);
 		ArrayList<String> array=new ArrayList<String>();
 		if(property==null)
 		{
-			this.logError("\t - Le fichier \""+pluginFileConfig+"\" ne contient pas d'attribut \""+
+			this.logError("\t - Le fichier \""+fileConfig+"\" ne contient pas d'attribut \""+
 						propertyName+"\"");
 			return null;
 		}
@@ -729,7 +750,7 @@ public class Core implements ICore
 		return array;
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPluginConfig(java.lang.String,java.lang.String)
 	 */
 	public IPluginDescriptor getPluginConfig(String pluginName, String pluginPath)
@@ -797,7 +818,7 @@ public class Core implements ICore
 		return descriptor;
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPuginsByInterface(java.lang.String)
 	 */
 	@Override
@@ -815,7 +836,7 @@ public class Core implements ICore
 		return (ArrayList<IPluginDescriptor>) pluglist;
 	}
 	
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPlugin(java.lang.String)
 	 */
 	@Override
@@ -831,7 +852,7 @@ public class Core implements ICore
 		return null;
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPluginDescriptor(java.lang.String)
 	 */
 	@Override
@@ -847,7 +868,7 @@ public class Core implements ICore
 		return null;
 	}
 	
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPlugins()
 	 */
 	@Override
@@ -864,8 +885,7 @@ public class Core implements ICore
 		}
 	}
 
-
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#removePlugin(IPluginDescriptor)
 	 */
 	@Override
@@ -926,8 +946,7 @@ public class Core implements ICore
 		return this.plugins.remove(plugin);
 	}
 
-
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#unload(java.lang.String)
 	 */
 	@Override
@@ -974,7 +993,7 @@ public class Core implements ICore
 		return false;
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getDescriptor(java.lang.String, java.lang.String, boolean, boolean, boolean, java.lang.String, java.util.ArrayList, java.util.ArrayList)
 	 */
 	@Override
@@ -987,7 +1006,7 @@ public class Core implements ICore
 				interfaces, libraries, dependencies);
 	}
 	
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#getPath()
 	 */
 	@Override
@@ -1000,20 +1019,12 @@ public class Core implements ICore
 	 * Définit le fichier de configuration de la plateforme
 	 * @param fileName : {@link String}, Le nom du fichier de configuration
 	 */
-	// A METTRE EN PRIVATE
-//	private void setFileName(String fileName)
-	public void setFileName(String fileName)
+	private void setFileName(String fileName)
 	{
 		this.fileName=fileName;
-	}
-	// A DETRUIRE
-	public void setPath(String path)
-	{
-		this.path=path;
-	}
-	
+	}	
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#logWrite(java.lang.String)
 	 */
 	@Override
@@ -1025,7 +1036,7 @@ public class Core implements ICore
 		}
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#logPrint(java.lang.String)
 	 */
 	@Override
@@ -1037,7 +1048,7 @@ public class Core implements ICore
 		}
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#logError(java.lang.String)
 	 */
 	@Override
@@ -1049,7 +1060,7 @@ public class Core implements ICore
 		}
 	}
 
-	/** (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see main.ICore#logDisplay()
 	 */
 	@Override
@@ -1062,7 +1073,7 @@ public class Core implements ICore
 	}
 
 	/**
-	 * The main function
+	 * La fonction principale
 	 * @param args
 	 */
 	public static void main(String[] args)

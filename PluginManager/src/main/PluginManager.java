@@ -1000,12 +1000,6 @@ public class PluginManager implements IPlugin
 	public static void main(String[] args)
 	{
 		System.out.println("PluginManager");
-//		Core core=new Core();
-//		core.setFileName("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/config.ini");
-//		core.setPath("/home/nemo/Documents/Info/Java/Projets/ProjectCLE/plugins/");
-//		core.loadConfigs();
-//		core.logDisplay();
-//		new PluginManager(core);
 	}
 
 }

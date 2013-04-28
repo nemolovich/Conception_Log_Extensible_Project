@@ -41,8 +41,8 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 	private int frameWidth=720;
 	private int frameHeight=350;
 	private JButton addPlugin=new JButton("Ajouter un plugin");
-	private JButton addPluginFrom=new JButton("<html><center>Ajouter un plugin depuis le plugin:" +
-			"<br/>\"<i>null</i>\"</center</html>");
+	private JButton addPluginFrom=new JButton("<html><center>Ajouter un plugin dépendant du plugin:" +
+			"<br/>\"<i>null</i>\"</center></html>");
 	private JButton displayFilePlugin=new JButton("<html><center>Afficher le fichier de configuration" +
 			"</center></html>");
 	private JButton loadPlugin=new JButton("Charger le plugin");
@@ -83,7 +83,6 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 		this.setTitle("Plugin Manager");
 		this.setLocationRelativeTo(null);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-//		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		final PluginManagerView pm = this;
 		final String pn = this.pluginManager.getName();
 		this.addWindowListener(new WindowAdapter() 
@@ -95,8 +94,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 					pm.dispose();
 				}
 			});
-//		this.setResizable(false);
-//		this.setIconImage(new ImageIcon("img/icon.png").getImage());
+//		this.setIconImage(new ImageIcon("ressources/img/PluginManager_icon.png").getImage());
 		
 		JPanel pluginsPanel=new JPanel();
 		pluginsPanel.setLayout(new BorderLayout());
@@ -171,7 +169,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 			String pluginName=(String) this.pluginList.getTableModel().getPlugin(row).getName();
 			if(this.pluginList.getSelectedRow()>-1)
 			{
-				this.addPluginFrom.setText("<html><center>Ajouter un plugin depuis le plugin:<br/>\"<i>"+pluginName+
+				this.addPluginFrom.setText("<html><center>Ajouter un plugin dépendant du plugin:<br/>\"<i>"+pluginName+
 						"</i>\"</center</html>");
 				this.addPluginFrom.setEnabled(true);
 				this.refreshPlugin.setEnabled(true);
@@ -464,7 +462,7 @@ public class PluginManagerView extends JFrame implements ActionListener, MouseLi
 			String pluginName=(String) parent.getName();
 			if(pluginName!=null)
 			{
-				this.addPluginFrom.setText("<html><center>Ajouter un plugin depuis le plugin:" +
+				this.addPluginFrom.setText("<html><center>Ajouter un plugin dépendant du plugin:" +
 						"<br/>\"<i>"+pluginName+"</i>\"</center></html>");
 				this.addPluginFrom.setEnabled(true);
 				this.refreshPlugin.setEnabled(true);

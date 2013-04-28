@@ -2,6 +2,7 @@ package main.log;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
@@ -70,6 +71,7 @@ public class FrameLogger extends JFrame implements ILogger, ActionListener
 
 		this.log.setEditable(false);
 		this.log.setAutoscrolls(true);
+		this.log.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		this.scroll = new JScrollPane(this.log);
 		this.scroll.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 		this.scroll.setPreferredSize(new Dimension(490,200));

@@ -6,96 +6,107 @@ import main.plugin.IPlugin;
 import main.plugin.IPluginDescriptor;
 
 /**
- * Interface ICore: The core interface
+ * Interface ICore: L'interface qu'implémente le coeur.
  * @author Brian GOHIER
+ * @see Core
  */
 
 public interface ICore
 {
-
 	/**
-	 * Load a plugin from his {@link IPluginDescriptor descriptor}.
-	 * @param descriptor - {@link IPluginDescriptor descriptor}, The
-	 * plugin descriptor
-	 * @param active - {@link Boolean boolean}, Set if the plugin
-	 * must be loaded with active status
-	 * @return {@link Object}, The plugin if it has been successfully
-	 * loaded else null
+	 * Charge un plugin depuis son {@link IPluginDescriptor descripteur} et retourne
+	 * son instance, "null" si une erreur est arrivée.
+	 * @param descriptor - {@link IPluginDescriptor} : Le descripteur du plugin
+	 * @param active - {@link Boolean boolean} : Définit si le plugin doit
+	 * être chargé activement (dépendant de la plateforme) ou non
+	 * @return {@link Object} : L'instance du plugin si il a été chargé
+	 * correctement "null" sinon
 	 */
 	public abstract Object loadPlugin(IPluginDescriptor descriptor,
 			boolean active);
 
 	/**
-	 * Get the plugin instance from his name and his class
-	 * @param pluginName : {@link String}, The plugin name
-	 * @param classe : {@link Class}<{@link IPlugin}>, The plugin class
-	 * @param active : {@link Boolean boolean}, If the plugin is active
-	 * @return {@link Object}, The plugin instance
+	 * Retourne l'instance d'un plugin à partir de son nom et de la classe
+	 * qui le définit (qui peut être actif ou passif).
+	 * @param pluginName {@link String} : Le nom du plugin
+	 * @param classe {@link Class}<{@link IPlugin}> : La classe du plugin
+	 * @param active - {@link Boolean boolean} : Si le plugin est actif
+	 * @return {@link Object} : L'instance du plugin, "null" si erreur
 	 */
 	public Object getPluginInstance(String pluginName, Class<?> classe, boolean active);
 
 	/**
-	 * Load a config file from core.
-	 * @return {@link Boolean boolean}, True if the config have been 
-	 * successfully loaded
+	 * Charge les configurations du coeur à partir de son fichier de 
+	 * configurations, ainsi pour chaque plugin défini dans ce fichier, on va
+	 * ouvrir son fichier de configuration et enregistrer ses paramètres dans
+	 * un nouveau {@link IPluginDescriptor descripteur}.
+	 * @return {@link Boolean boolean} : Vrai si les configurations ont été
+	 * correctement chargées
 	 */
 	public abstract boolean loadConfigs();
 
 	/**
-	 * Get the {@link IPluginDescriptor plugin descriptor} from a plugin name
-	 * @param pluginName : {@link String}, The plugin name
-	 * @param pluginPath : {@link String}, The plugin path
-	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 * Retourne le {@link IPluginDescriptor plugin descripteur} d'un plugin
+	 * depuis son nom et son dossier.
+	 * @param pluginName {@link String} : Le nom du plugin
+	 * @param pluginPath {@link String} : Le chemin vers le dossier du plugin
+	 * @return {@link IPluginDescriptor} : Le descripteur du plugin, "null" si erreur
 	 */
 	public abstract IPluginDescriptor getPluginConfig(String pluginName, String pluginPath);
 	/**
-	 * Get the plugins list that implement the given interface name.
-	 * @param iplugin : {@link String}, The interface name
-	 * @return {@link ArrayList}<{@link String}>, The plugin list
+	 * Retourne la {@link ArrayList liste} des {@link IPluginDescriptor plugins}
+	 *  que connaît la plateforme et qui implémentent (depuis leur fichier de
+	 *  configurations) l'interface qui porte le nom donné.
+	 * @param iplugin {@link String} : Le nom de l'interface
+	 * @return {@link ArrayList}<{@link IPluginDescriptor}> : La liste des plugins
+	 * qui implémentent cette interface
 	 */
 	public abstract ArrayList<IPluginDescriptor> getPuginsByInterface(String iplugin);
 
 	/**
-	 * Get the plugin by {@link IPlugin#getName() name} from
-	 * the plugins loaded in core.
-	 * @param pluginName - {@link String}, The plugin name
-	 * @return {@link Object}, The plugin
+	 * Retourne l'instance d'un plugin depuis son {@link IPlugin#getName() nom}
+	 * à partir des plugins connus par la plateforme.
+	 * @param pluginName - {@link String} : Le nom du plugin
+	 * @return {@link Object} : L'instance du plugin, "null" si non trouvé
 	 */
 	public abstract Object getPlugin(String pluginName);
 
 	/**
-	 * Get the plugin descriptor by {@link IPluginDescriptor#getName() name}.
-	 * from the plugins loaded in core.
-	 * @param pluginName - {@link String}, The plugin name
-	 * @return {@link IPluginDescriptor}, The plugin descriptor, null if does not exist
+	 * Retourne le {@link IPluginDescriptor descripteur} d'un plugin
+	 * depuis son {@link IPluginDescriptor#getName() nom} à partir de la
+	 * liste des plugins connus par la plateforme.
+	 * @param pluginName - {@link String} : Le nom du plugin
+	 * @return {@link IPluginDescriptor} : Le descripteur du plugin,
+	 * "null" si il n'existe pas
 	 */
 	public abstract IPluginDescriptor getPluginDescriptor(String pluginName);
 
 	/**
-	 * Get all the {@link IPluginDescriptor plugin descriptors} loaded in
-	 * the core.
-	 * @return {@link ArrayList}<{@link IPluginDescriptor}>, The plugin descriptor
+	 * Retourne tous les {@link IPluginDescriptor descripteurs} de plugin que
+	 * connaît la plateforme.
+	 * @return {@link ArrayList}<{@link IPluginDescriptor}> : La liste des plugins
 	 */
 	public abstract ArrayList<IPluginDescriptor> getPlugins();
 
 	/**
-	 * Remove the plugin from the list
-	 * @param plugin : {@link IPluginDescriptor}, The plugin
-	 * @return {@link Boolean boolean}, If the plugin has been removed
+	 * Supprime un plugin de la liste des plugins de la plateforme.
+	 * @param plugin {@link IPluginDescriptor} : Le plugin
+	 * @return {@link Boolean boolean} : Vrai si le plugin a été correctement
+	 * supprimé
 	 */
 	public abstract boolean removePlugin(IPluginDescriptor plugin);
 
 	/**
-	 * Get the {@link IPluginDescriptor descriptors} created by attributes.
-	 * @param name : {@link String}, The plugin name
-	 * @param path : {@link String}, The plugin path
-	 * @param isDefault : {@link Boolean boolean}, If the plugin is loaded by default
-	 * @param isActive : {@link Boolean boolean}, If the plugin is active
-	 * @param isSingleton : {@link Boolean boolean}, If the plugin is loaded by singleton loading
-	 * @param className : {@link String}, The plugin class name
-	 * @param interfaces : {@link ArrayList}<{@link String}>, The interfaces dependencies of the plugin
-	 * @param libraries : {@link ArrayList}<{@link String}>, The libraries dependencies of the plugin
-	 * @return {@link IPluginDescriptor}, The plugin descriptor
+	 * Retourne un {@link IPluginDescriptor descripteur} créé à partir de ses attributs.
+	 * @param name {@link String} : Le nom du plugin
+	 * @param path {@link String} : Le chemin de son dossier
+	 * @param isDefault {@link Boolean boolean} : Si le plugin est chargé par défaut
+	 * @param isActive {@link Boolean boolean} : Si le plugin est actif
+	 * @param isSingleton {@link Boolean boolean} : Si le plugin est une instance unique ou non
+	 * @param className {@link String} : Le nom de la classe principale du plugin
+	 * @param interfaces {@link ArrayList}<{@link String}> : Les interfaces dont dépend le plugin
+	 * @param libraries {@link ArrayList}<{@link String}> : Les librairies dont dépend le plugin
+	 * @return {@link IPluginDescriptor} : Le descripteur du plugin
 	 */
 	public abstract IPluginDescriptor getDescriptor(String name, String path,
 			boolean isDefault, boolean isActive, boolean isSingleton,
@@ -103,38 +114,38 @@ public interface ICore
 			ArrayList<String> libraries, ArrayList<String> dependencies);
 
 	/**
-	 * Unload the plugin. If some plugins depend of this one they will be unload too. 
-	 * @param pluginName : {@link String}, The plugin name
-	 * @return {@link Boolean boolean}, True if the plugin has been correctly unloaded
+	 * Décharge un plugin. Si d'autre plugins dépendent de lui ils seront également déchargés.
+	 * @param pluginName {@link String} : Le nom du plugin
+	 * @return {@link Boolean boolean} : Vrai si le plugin a été correctement déchargé
 	 */
 	public abstract boolean unload(String pluginName);
 	
 	/**
-	 * Return the plugin directory path.
-	 * @return {@link String} The plugin path
+	 * Retourne le chemin vers le dossier qui contient tous les plugins.
+	 * @return {@link String} Le chemin vers les plugins
 	 */
 	public abstract String getPath();
 	
 	/**
-	 * Write in all {@link Core#logs loggers}
-	 * @param message : {@link String}, The message to write as LOG
+	 * Écrit dans tous les {@link Core#logs loggers}.
+	 * @param message {@link String} : Le message à écrire en tant que LOG
 	 */
 	public abstract void logWrite(String message);
 
 	/**
-	 * Print in all {@link Core#logs loggers}
-	 * @param message : {@link String}, The message to print in a logger
+	 * Imprime dans tous les {@link Core#logs loggers}.
+	 * @param message {@link String} : Le message à imprimer dans les loggers
 	 */
 	public abstract void logPrint(String message);
 	
 	/**
-	 * Write an error in all {@link Core#logs loggers}
-	 * @param error : {@link String}, The error to write as ERROR
+	 * Écrit une erreur dans tous les {@link Core#logs loggers}.
+	 * @param error {@link String} : L'erreur à écrire en tant que ERROR
 	 */
 	public abstract void logError(String error);
 	
 	/**
-	 * Display all hidden {@link Core#logs loggers}
+	 * Affiche tous les {@link Core#logs loggers} cachés.
 	 */
 	public abstract void logDisplay();
 	
